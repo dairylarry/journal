@@ -9,7 +9,7 @@
 
 .entry-card:hover {
   border-color: var(--border-light);
-  background: var(--bg);
+  background: var(--surface-hover);
 }
 
 .entry-card-top {
