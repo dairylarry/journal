@@ -154,10 +154,12 @@
   color: var(--text) !important;
 }
 
+/* Editing area uses system-ui so the overlay and textarea stay pixel-aligned.
+   Georgia is reserved for the rendered markdown preview. */
 .editor-md-wrap .w-md-editor-text-pre,
 .editor-md-wrap .w-md-editor-text-input,
 .editor-md-wrap .w-md-editor-text textarea {
-  font-family: var(--font-body) !important;
+  font-family: system-ui, -apple-system, sans-serif !important;
   font-size: 1rem !important;
   line-height: 1.6 !important;
 }
@@ -201,23 +203,16 @@
   color: var(--text) !important;
 }
 
-.editor-md-wrap .w-md-editor-bar {
-  display: none !important;
-}
-
-.editor-md-wrap .w-md-editor-content {
-  overflow: hidden !important;
-}
-
-.editor-md-wrap .w-md-editor-text {
-  overflow-y: auto !important;
-  overscroll-behavior: contain !important;
-}
-
+/* Extra bottom padding so the last line never hides behind the editor frame */
+.editor-md-wrap .w-md-editor-text-pre,
 .editor-md-wrap .w-md-editor-text-input,
 .editor-md-wrap .w-md-editor-text textarea {
-  overflow-y: auto !important;
-  overscroll-behavior: contain !important;
+  padding-bottom: 3rem !important;
+}
+
+/* Hide dragbar on body editor only; notes editor uses it for resizing */
+.editor-md-wrap--no-drag .w-md-editor-bar {
+  display: none !important;
 }
 
 .editor-word-count {

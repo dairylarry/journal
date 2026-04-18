@@ -184,12 +184,30 @@ export default function EntryEditor() {
     navigate(-1)
   }
 
+  // MDEditor hardcodes autocorrect="off" — override after mount so iOS
+  // spell-check and autocorrect work normally in the textareas.
+  const editorContainerRef = useRef(null)
+  useEffect(() => {
+    if (!editorContainerRef.current) return
+    const apply = () => {
+      editorContainerRef.current?.querySelectorAll('textarea').forEach(ta => {
+        ta.setAttribute('autocorrect', 'on')
+        ta.setAttribute('autocapitalize', 'sentences')
+        ta.setAttribute('spellcheck', 'true')
+      })
+    }
+    apply()
+    // MDEditor may re-render its internals; re-apply on a short delay too
+    const t = setTimeout(apply, 300)
+    return () => clearTimeout(t)
+  }, [loading])
+
   if (loading) return <div className="page-loading">loading…</div>
 
   const wordCount = countWords(body)
 
   return (
-    <div className="editor">
+    <div className="editor" ref={editorContainerRef}>
       <div className="editor-header">
         <button className="btn-back" onClick={handleBack}>← back</button>
         <div className="editor-header-right">
@@ -222,12 +240,12 @@ export default function EntryEditor() {
       />
 
       <div className="editor-section-label">entry</div>
-      <div data-color-mode="light" className="editor-md-wrap">
+      <div data-color-mode="light" className="editor-md-wrap editor-md-wrap--no-drag">
         <MDEditor
           value={body}
           onChange={val => { setBody(val || ''); markDirty() }}
           preview={showPreview ? 'preview' : 'edit'}
-          height={360}
+          height={520}
           visibleDragbar={false}
         />
       </div>
@@ -241,8 +259,8 @@ export default function EntryEditor() {
           value={notes}
           onChange={val => { setNotes(val || ''); markDirty() }}
           preview={showPreview ? 'preview' : 'edit'}
-          height={200}
-          visibleDragbar={false}
+          height={280}
+          visibleDragbar={true}
           placeholder="Vocabulary, corrections, references…"
         />
       </div>

@@ -16,6 +16,7 @@ export default function Landing() {
     try { return JSON.parse(localStorage.getItem('todayWordsCache') || 'null') } catch { return null }
   })
   const [todayEntries, setTodayEntries] = useState([])
+  const [weekGroups, setWeekGroups] = useState([])
 
   useEffect(() => {
     fetchEntries({ userId: user.userId }).then(entries => {
@@ -23,9 +24,38 @@ export default function Landing() {
       const today = toLocalDate()
       const te = entries.filter(e => e.date === today)
       const words = te.reduce((sum, e) => sum + (e.wordCount || 0), 0)
+
+      // Collect the previous days of the current week (Sun–today)
+      const d = new Date(today + 'T12:00:00')
+      const dow = d.getDay() // 0 = Sunday
+      const prevDates = new Set()
+      for (let i = 1; i <= dow; i++) {
+        const past = new Date(d)
+        past.setDate(d.getDate() - i)
+        prevDates.add(toLocalDate(past))
+      }
+
+      // Group by date, newest day first
+      const byDate = {}
+      entries.filter(e => prevDates.has(e.date)).forEach(e => {
+        if (!byDate[e.date]) byDate[e.date] = []
+        byDate[e.date].push(e)
+      })
+      const groups = Object.keys(byDate)
+        .sort()
+        .reverse()
+        .map(date => ({
+          date,
+          dateLabel: new Date(date + 'T12:00:00').toLocaleDateString('en-US', {
+            weekday: 'long', month: 'long', day: 'numeric',
+          }),
+          entries: byDate[date].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+        }))
+
       setStreak({ currentStreak, longestStreak })
       setTodayWords(words)
       setTodayEntries(te)
+      setWeekGroups(groups)
       localStorage.setItem('streakCache', JSON.stringify({ currentStreak, longestStreak }))
       localStorage.setItem('todayWordsCache', JSON.stringify(words))
     }).catch(console.error)
@@ -85,14 +115,32 @@ export default function Landing() {
         </button>
       </nav>
 
-      {todayEntries.length > 0 && (
-        <div className="landing-today-entries">
-          {todayEntries.map(entry => (
-            <EntryCard
-              key={entry.createdAt}
-              entry={entry}
-              onClick={() => navigate(`/entries/${entry.entryId}`, { state: { entry } })}
-            />
+      {(todayEntries.length > 0 || weekGroups.length > 0) && (
+        <div className="landing-week-entries">
+          {todayEntries.length > 0 && (
+            <div className="landing-day-group">
+              <div className="landing-day-label">Today</div>
+              {todayEntries.map(entry => (
+                <EntryCard
+                  key={entry.createdAt}
+                  entry={entry}
+                  onClick={() => navigate(`/entries/${entry.entryId}`, { state: { entry } })}
+                />
+              ))}
+            </div>
+          )}
+
+          {weekGroups.map(({ date, dateLabel, entries }) => (
+            <div key={date} className="landing-day-group">
+              <div className="landing-day-label">{dateLabel}</div>
+              {entries.map(entry => (
+                <EntryCard
+                  key={entry.createdAt}
+                  entry={entry}
+                  onClick={() => navigate(`/entries/${entry.entryId}`, { state: { entry } })}
+                />
+              ))}
+            </div>
           ))}
         </div>
       )}

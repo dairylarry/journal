@@ -58,6 +58,12 @@
   background: var(--surface-alt);
 }
 
+/* Let markdown render inherit the section background (prevents white box in notes) */
+.entry-card-md .wmde-markdown,
+.entry-card-md .w-md-editor-preview {
+  background: transparent !important;
+}
+
 /* Markdown inside cards — slightly smaller than detail view */
 .entry-card-md {
   font-family: var(--font-body);
