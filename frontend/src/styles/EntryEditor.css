@@ -140,7 +140,7 @@
 
 /* Override @uiw/react-md-editor for light theme */
 .editor-md-wrap .w-md-editor {
-  background: var(--bg) !important;
+  background: var(--surface) !important;
   color: var(--text) !important;
   border: none !important;
   box-shadow: none !important;
@@ -166,28 +166,36 @@
 .editor-md-wrap .w-md-editor-text-input,
 .editor-md-wrap .w-md-editor-text textarea {
   font-family: system-ui, -apple-system, sans-serif !important;
-  font-size: 1rem !important;
+  font-size: 1.44rem !important;
   line-height: 1.6 !important;
+}
+
+@media (max-width: 767px) {
+  .editor-md-wrap .w-md-editor-text-pre,
+  .editor-md-wrap .w-md-editor-text-input,
+  .editor-md-wrap .w-md-editor-text textarea {
+    font-size: 1.56rem !important;
+  }
 }
 
 .editor-md-wrap .w-md-editor-text-input,
 .editor-md-wrap .w-md-editor-text textarea {
-  background: var(--bg) !important;
+  background: var(--surface) !important;
   color: #1a1a1a !important;
   caret-color: #1a1a1a !important;
   -webkit-text-fill-color: #1a1a1a !important;
 }
 
 .editor-md-wrap .w-md-editor-preview {
-  background: var(--bg) !important;
+  background: var(--surface) !important;
   border-left: 1px solid var(--border) !important;
 }
 
 .editor-md-wrap .wmde-markdown {
-  background: var(--bg) !important;
+  background: var(--surface) !important;
   color: var(--text) !important;
   font-family: var(--font-body) !important;
-  font-size: 1rem !important;
+  font-size: 1.44rem !important;
   line-height: 1.8 !important;
 }
 

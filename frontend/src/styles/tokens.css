@@ -1,9 +1,9 @@
 :root {
   /* Backgrounds */
-  --bg:            #faf4e8;
-  --surface:       #fdfbf9;
-  --surface-alt:   #f7f0ea;   /* warm pinkish-beige — callouts, blockquotes */
-  --surface-hover: #f0e8e0;
+  --bg:            #faf4e8;   /* warm parchment — page background */
+  --surface:       #ffffff;   /* white — cards, buttons, editor */
+  --surface-alt:   #f7f0ea;   /* warm beige — notes sections, callouts */
+  --surface-hover: #f5ede0;
 
   /* Borders */
   --border:        #e8ddd4;
