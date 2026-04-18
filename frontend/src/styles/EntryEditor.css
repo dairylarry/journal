@@ -158,8 +158,9 @@
 .editor-md-wrap .w-md-editor-text-input,
 .editor-md-wrap .w-md-editor-text textarea {
   background: var(--bg) !important;
-  color: var(--text) !important;
-  caret-color: var(--text) !important;
+  color: #1a1a1a !important;
+  caret-color: #1a1a1a !important;
+  -webkit-text-fill-color: #1a1a1a !important;
   font-family: var(--font-body) !important;
   font-size: 1rem !important;
   line-height: 1.8 !important;
