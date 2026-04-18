@@ -72,19 +72,20 @@ export default function Landing() {
     <div className="landing">
       <div className="landing-wordmark">journal</div>
 
-      <div className="landing-stats">
-        <div className="landing-streak">
-          <span className="landing-streak-count">{currentStreak}</span>
-          <span className="landing-streak-label">{currentStreak === 1 ? 'day streak' : 'day streak'}</span>
+      <div className="landing-main-card">
+        <div className="landing-stats">
+          <div className="landing-streak">
+            <span className="landing-streak-count">{currentStreak}</span>
+            <span className="landing-streak-label">{currentStreak === 1 ? 'day streak' : 'day streak'}</span>
+          </div>
+          <div className="landing-stat-divider" />
+          <div className="landing-words">
+            <span className="landing-words-count">{words}</span>
+            <span className="landing-words-label">words today</span>
+          </div>
         </div>
-        <div className="landing-stat-divider" />
-        <div className="landing-words">
-          <span className="landing-words-count">{words}</span>
-          <span className="landing-words-label">words today</span>
-        </div>
-      </div>
 
-      <nav className="landing-nav">
+        <nav className="landing-nav">
         <button className="landing-btn landing-btn--primary" onClick={() => navigate('/entries/new')}>
           <span>New entry</span>
           <span className="landing-btn-arrow">+</span>
@@ -113,7 +114,8 @@ export default function Landing() {
           <span>Account</span>
           <span className="landing-btn-arrow">›</span>
         </button>
-      </nav>
+        </nav>
+      </div>
 
       {(todayEntries.length > 0 || weekGroups.length > 0) && (
         <div className="landing-week-entries">

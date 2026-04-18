@@ -1,6 +1,6 @@
 .entry-card {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 16px;
   background: var(--surface);
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
@@ -22,7 +22,7 @@
 
 .entry-card-title {
   font-family: var(--font-body);
-  font-size: 1.6rem;
+  font-size: 1.15rem;
   font-weight: 600;
   color: var(--text);
   flex: 1;
@@ -30,7 +30,7 @@
 }
 
 .entry-card-date {
-  font-size: 1rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
   font-family: var(--font-ui);
   white-space: nowrap;
@@ -67,8 +67,8 @@
 /* Markdown inside cards */
 .entry-card-md {
   font-family: var(--font-body);
-  font-size: 1.44rem;
-  line-height: 1.75;
+  font-size: 0.93rem;
+  line-height: 1.7;
   color: var(--text);
 }
 
@@ -99,16 +99,10 @@
 .entry-card-md strong { color: var(--text); }
 
 .entry-card-notes-label {
-  font-size: 0.9rem;
+  font-size: 0.7rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
   margin-bottom: 0.5rem;
   font-family: var(--font-ui);
-}
-
-@media (max-width: 767px) {
-  .entry-card-title { font-size: 1.75rem; }
-  .entry-card-md    { font-size: 1.56rem; }
-  .entry-card-date  { font-size: 1.1rem; }
 }

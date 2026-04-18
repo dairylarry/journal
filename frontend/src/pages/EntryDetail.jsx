@@ -69,30 +69,34 @@ export default function EntryDetail() {
         </button>
       </div>
 
-      <div className="detail-meta">
-        <span className="detail-date">{dateLabel}</span>
-        {(entry.tags || []).length > 0 && (
-          <div className="detail-tags">
-            {entry.tags.map(t => (
-              <span key={t} className="tag-chip">#{t}</span>
-            ))}
-          </div>
+      <div className="detail-card">
+        <div className="detail-meta">
+          <span className="detail-date">{dateLabel}</span>
+          {(entry.tags || []).length > 0 && (
+            <div className="detail-tags">
+              {entry.tags.map(t => (
+                <span key={t} className="tag-chip">#{t}</span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <h1 className="detail-title">{entry.title}</h1>
+
+        <hr className="detail-divider" />
+
+        <MarkdownView source={entry.body} className="detail-md" />
+
+        {entry.notes && (
+          <>
+            <hr className="detail-divider" />
+            <div className="detail-notes-section">
+              <div className="detail-notes-label">Notes</div>
+              <MarkdownView source={entry.notes} className="detail-md" />
+            </div>
+          </>
         )}
       </div>
-
-      <h1 className="detail-title">{entry.title}</h1>
-
-      <hr className="detail-divider" />
-
-      <MarkdownView source={entry.body} className="detail-md" />
-
-      {entry.notes && (
-        <>
-          <hr className="detail-divider" />
-          <div className="detail-notes-label">Notes</div>
-          <MarkdownView source={entry.notes} className="detail-md" />
-        </>
-      )}
     </div>
   )
 }

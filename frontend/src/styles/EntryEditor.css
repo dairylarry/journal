@@ -166,16 +166,8 @@
 .editor-md-wrap .w-md-editor-text-input,
 .editor-md-wrap .w-md-editor-text textarea {
   font-family: system-ui, -apple-system, sans-serif !important;
-  font-size: 1.44rem !important;
+  font-size: 1rem !important;
   line-height: 1.6 !important;
-}
-
-@media (max-width: 767px) {
-  .editor-md-wrap .w-md-editor-text-pre,
-  .editor-md-wrap .w-md-editor-text-input,
-  .editor-md-wrap .w-md-editor-text textarea {
-    font-size: 1.56rem !important;
-  }
 }
 
 .editor-md-wrap .w-md-editor-text-input,
@@ -195,7 +187,7 @@
   background: var(--surface) !important;
   color: var(--text) !important;
   font-family: var(--font-body) !important;
-  font-size: 1.44rem !important;
+  font-size: 1rem !important;
   line-height: 1.8 !important;
 }
 
