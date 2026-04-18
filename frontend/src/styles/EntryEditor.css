@@ -1,7 +1,13 @@
 .editor {
   max-width: 100%;
-  padding: 1.5rem 2rem 4rem;
+  padding: 1.5rem 1.25rem 4rem;
   min-height: 100dvh;
+}
+
+@media (min-width: 768px) {
+  .editor {
+    padding: 1.5rem 8rem 4rem;
+  }
 }
 
 .editor-header {

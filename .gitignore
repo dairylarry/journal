@@ -4,6 +4,9 @@
 frontend/.env
 frontend/.env.*
 
+# backfill scripts contain hardcoded credentials
+scripts/backfill-entry.mjs
+
 # build output — CI builds this, don't commit
 frontend/dist/
 
