@@ -221,6 +221,14 @@
   display: none !important;
 }
 
+/* ── Desktop font size overrides ── */
+@media (min-width: 768px) {
+  .editor-md-wrap .w-md-editor-text-pre,
+  .editor-md-wrap .w-md-editor-text-input,
+  .editor-md-wrap .w-md-editor-text textarea,
+  .editor-md-wrap .wmde-markdown { font-size: 1.125rem !important; }
+}
+
 .editor-word-count {
   font-size: 0.78rem;
   color: var(--text-dim);

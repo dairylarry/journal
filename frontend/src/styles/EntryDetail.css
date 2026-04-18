@@ -96,6 +96,7 @@
   line-height: 1.8;
   color: var(--text);
   padding: 0 1.5rem 1.5rem;
+  margin-top:20px;
 }
 
 .detail-md .wmde-markdown,

@@ -98,6 +98,12 @@
 }
 .entry-card-md strong { color: var(--text); }
 
+/* ── Desktop font size overrides ── */
+@media (min-width: 768px) {
+  .entry-card-md { font-size: 1.125rem; }
+  .entry-card-title { font-size: 1.3rem; }
+}
+
 .entry-card-notes-label {
   font-size: 0.7rem;
   letter-spacing: 0.08em;
