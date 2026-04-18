@@ -139,7 +139,8 @@
 }
 
 .landing-week-entries {
-  width: 65%;
+  width: 100%;
+  max-width: 750px;
   display: flex;
   flex-direction: column;
   gap: 2rem;
