@@ -1,18 +1,18 @@
 {
   "name": "Journal",
   "short_name": "Journal",
-  "start_url": "/journal/",
+  "start_url": "/journal-app/",
   "display": "standalone",
   "background_color": "#111110",
   "theme_color": "#111110",
   "icons": [
     {
-      "src": "/journal/icon-192.png",
+      "src": "/journal-app/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/journal/icon-512.png",
+      "src": "/journal-app/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }

@@ -29,7 +29,7 @@ function AuthedRoutes() {
 
 export default function App() {
   return (
-    <BrowserRouter basename="/journal">
+    <BrowserRouter basename="/journal-app">
       <AuthProvider>
         <AuthedRoutes />
       </AuthProvider>
