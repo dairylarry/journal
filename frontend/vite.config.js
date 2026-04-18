@@ -13,5 +13,5 @@ export default defineConfig({
       manifest: false,
     }),
   ],
-  base: '/journal-app/',
+  base: '/journal/',
 })
