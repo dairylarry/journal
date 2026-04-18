@@ -1,1 +1,12 @@
+# env files — never commit secrets
 .env
+.env.*
+frontend/.env
+frontend/.env.*
+
+# build output — CI builds this, don't commit
+frontend/dist/
+
+# dependencies
+node_modules/
+frontend/node_modules/
