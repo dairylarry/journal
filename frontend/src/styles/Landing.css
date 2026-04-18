@@ -10,7 +10,7 @@
 
 .landing-wordmark {
   width: 100%;
-  max-width: 680px;
+  max-width: 500px;
 }
 
 .landing-wordmark {
@@ -67,7 +67,7 @@
 /* Main white card */
 .landing-main-card {
   width: 100%;
-  max-width: 680px;
+  max-width: 525px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 16px;

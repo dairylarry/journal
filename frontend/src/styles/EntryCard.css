@@ -101,6 +101,7 @@
 /* ── Desktop font size overrides ── */
 @media (min-width: 768px) {
   .entry-card-md { font-size: 1.125rem; }
+  .entry-card-md .wmde-markdown { font-size: 1.125rem !important; }
   .entry-card-title { font-size: 1.3rem; }
 }
 

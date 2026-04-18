@@ -6,6 +6,12 @@
   padding: 0;
 }
 
+@media (min-width: 768px) {
+  html {
+    font-size: 67%; /* matches 100% zoom to what 67% zoom looked like before */
+  }
+}
+
 html, body {
   height: 100%;
 }
