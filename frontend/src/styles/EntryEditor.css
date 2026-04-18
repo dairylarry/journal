@@ -155,15 +155,20 @@
   color: var(--text) !important;
 }
 
+.editor-md-wrap .w-md-editor-text-pre,
+.editor-md-wrap .w-md-editor-text-input,
+.editor-md-wrap .w-md-editor-text textarea {
+  font-family: var(--font-body) !important;
+  font-size: 1rem !important;
+  line-height: 1.6 !important;
+}
+
 .editor-md-wrap .w-md-editor-text-input,
 .editor-md-wrap .w-md-editor-text textarea {
   background: var(--bg) !important;
   color: #1a1a1a !important;
   caret-color: #1a1a1a !important;
   -webkit-text-fill-color: #1a1a1a !important;
-  font-family: var(--font-body) !important;
-  font-size: 1rem !important;
-  line-height: 1.8 !important;
 }
 
 .editor-md-wrap .w-md-editor-preview {
@@ -199,6 +204,10 @@
 
 .editor-md-wrap .w-md-editor-bar {
   display: none !important;
+}
+
+.editor-md-wrap .w-md-editor-text {
+  overflow-y: auto !important;
 }
 
 .editor-word-count {
