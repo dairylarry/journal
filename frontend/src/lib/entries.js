@@ -68,7 +68,10 @@ export async function fetchEntries({ userId }) {
     ExpressionAttributeValues: { ':pk': `USER#${userId}` },
     ScanIndexForward: false,
   }))
-  return result.Items || []
+  return (result.Items || []).map(item => ({
+    ...item,
+    tags: Array.isArray(item.tags) ? item.tags : item.tags ? [...item.tags] : [],
+  }))
 }
 
 export function computeStreaks(entries) {

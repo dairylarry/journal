@@ -12,6 +12,37 @@
   margin-bottom: 1.5rem;
 }
 
+.editor-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.editor-preview-toggle {
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 0.45rem 0.9rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.editor-preview-toggle:hover {
+  background: var(--surface-alt);
+  color: var(--text);
+  border-color: var(--text-muted);
+}
+
+.editor-preview-toggle.active {
+  background: var(--accent-light);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 .editor-save-btn {
   font-family: var(--font-ui);
   font-size: 0.85rem;

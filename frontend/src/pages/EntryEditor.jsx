@@ -35,6 +35,7 @@ export default function EntryEditor() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [draftRestored, setDraftRestored] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
 
   const draftKey = isNew ? 'draft_new' : `draft_${entryId}`
   const saveTimerRef = useRef(null)
@@ -169,20 +170,27 @@ export default function EntryEditor() {
   if (loading) return <div className="page-loading">loading…</div>
 
   const wordCount = countWords(body)
-  const isMobile = window.innerWidth < 600
-  const previewMode = isMobile ? 'edit' : 'live'
 
   return (
     <div className="editor">
       <div className="editor-header">
         <button className="btn-back" onClick={handleBack}>← back</button>
-        <button
-          className="editor-save-btn"
-          onClick={handleSave}
-          disabled={!body.trim() || saving}
-        >
-          {saving ? 'saving…' : 'save'}
-        </button>
+        <div className="editor-header-right">
+          <button
+            className={`editor-preview-toggle${showPreview ? ' active' : ''}`}
+            onClick={() => setShowPreview(v => !v)}
+            title={showPreview ? 'Switch to edit' : 'Preview markdown'}
+          >
+            {showPreview ? 'edit' : 'preview'}
+          </button>
+          <button
+            className="editor-save-btn"
+            onClick={handleSave}
+            disabled={!body.trim() || saving}
+          >
+            {saving ? 'saving…' : 'save'}
+          </button>
+        </div>
       </div>
 
       {draftRestored && <div className="editor-draft-notice">Draft restored</div>}
@@ -201,7 +209,7 @@ export default function EntryEditor() {
         <MDEditor
           value={body}
           onChange={val => { setBody(val || ''); markDirty() }}
-          preview={previewMode}
+          preview={showPreview ? 'preview' : 'edit'}
           height={360}
           visibleDragbar={false}
         />
@@ -215,7 +223,7 @@ export default function EntryEditor() {
         <MDEditor
           value={notes}
           onChange={val => { setNotes(val || ''); markDirty() }}
-          preview={previewMode}
+          preview={showPreview ? 'preview' : 'edit'}
           height={200}
           visibleDragbar={false}
           placeholder="Vocabulary, corrections, references…"
