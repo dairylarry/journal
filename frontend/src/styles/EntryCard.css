@@ -22,7 +22,7 @@
 
 .entry-card-title {
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: 1.15rem;
   font-weight: 600;
   color: var(--text);
   flex: 1;
@@ -64,11 +64,11 @@
   background: transparent !important;
 }
 
-/* Markdown inside cards — slightly smaller than detail view */
+/* Markdown inside cards */
 .entry-card-md {
   font-family: var(--font-body);
-  font-size: 0.93rem;
-  line-height: 1.7;
+  font-size: 1.05rem;
+  line-height: 1.75;
   color: var(--text);
 }
 
