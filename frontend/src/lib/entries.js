@@ -12,12 +12,14 @@ const dynamoClient = new DynamoDBClient({
 })
 const docClient = DynamoDBDocumentClient.from(dynamoClient)
 
-// Returns YYYY-MM-DD in local timezone
+// Returns YYYY-MM-DD in local timezone, with a 4am cutoff
+// (midnight–3:59am counts as the previous calendar day)
 export function toLocalDate(d = new Date()) {
+  const shifted = new Date(d.getTime() - 4 * 60 * 60 * 1000)
   return [
-    d.getFullYear(),
-    String(d.getMonth() + 1).padStart(2, '0'),
-    String(d.getDate()).padStart(2, '0'),
+    shifted.getFullYear(),
+    String(shifted.getMonth() + 1).padStart(2, '0'),
+    String(shifted.getDate()).padStart(2, '0'),
   ].join('-')
 }
 
