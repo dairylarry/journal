@@ -1,0 +1,123 @@
+.landing {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 3rem 1.25rem 4rem;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-wordmark {
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  margin-bottom: 3rem;
+}
+
+/* Stats row */
+.landing-stats {
+  display: flex;
+  align-items: baseline;
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.landing-streak,
+.landing-words {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.landing-streak-count,
+.landing-words-count {
+  font-family: var(--font-body);
+  font-size: 2.75rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.landing-words-count {
+  color: var(--text);
+}
+
+.landing-streak-label,
+.landing-words-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-family: var(--font-ui);
+}
+
+.landing-stat-divider {
+  width: 1px;
+  height: 2.75rem;
+  background: var(--border);
+  align-self: center;
+}
+
+/* Nav buttons */
+.landing-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.landing-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s;
+  cursor: pointer;
+  width: 100%;
+  font-family: var(--font-ui);
+}
+
+.landing-btn:hover {
+  background: var(--surface-alt);
+  border-color: var(--border-light);
+}
+
+.landing-btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.landing-btn--primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.landing-btn-arrow {
+  color: inherit;
+  opacity: 0.5;
+  font-size: 1rem;
+}
+
+.landing-btn--primary .landing-btn-arrow {
+  opacity: 0.8;
+}
+
+.landing-btn-sub {
+  font-size: 0.8rem;
+  opacity: 0.6;
+  font-weight: 400;
+}
+
+.landing-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0.5rem 0;
+}

@@ -1,0 +1,37 @@
+:root {
+  /* Backgrounds */
+  --bg:            #ffffff;
+  --surface:       #fdfbf9;
+  --surface-alt:   #f7f0ea;   /* warm pinkish-beige — callouts, blockquotes */
+  --surface-hover: #f0e8e0;
+
+  /* Borders */
+  --border:        #e8ddd4;
+  --border-light:  #d8ccc0;
+
+  /* Text — dark navy, matching writingstreak */
+  --text:          #2d3561;
+  --text-muted:    #6b7899;
+  --text-dim:      #b0b8cc;
+
+  /* Accent — warm orange-red, used for headings, streak, active elements */
+  --accent:        #c96338;
+  --accent-hover:  #b55530;
+  --accent-light:  #fdf0ea;   /* very light warm blush */
+
+  /* Entry / streak */
+  --streak:        #c96338;
+  --streak-dim:    #fdf0ea;
+
+  /* Entry-day shading on calendar */
+  --entry-day:     #e8f0e8;
+  --entry-day-border: #b8d8b8;
+
+  /* Error */
+  --error:         #c0392b;
+  --error-dim:     #fde8e8;
+
+  /* Typography — serif body, matching writingstreak's editorial feel */
+  --font-body: Georgia, 'Times New Roman', serif;
+  --font-ui:   -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}

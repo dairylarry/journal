@@ -1,0 +1,132 @@
+.today {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 4rem;
+  min-height: 100dvh;
+}
+
+.today-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.today-title {
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--text);
+}
+
+.today-new-btn {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.4rem 0.85rem;
+  background: var(--surface);
+  transition: background 0.15s, color 0.15s;
+  font-family: var(--font-ui);
+}
+
+.today-new-btn:hover {
+  background: var(--surface-alt);
+  color: var(--text);
+}
+
+.today-date {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.03em;
+  font-family: var(--font-ui);
+}
+
+.today-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.today-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.1rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  text-align: left;
+  width: 100%;
+  gap: 1rem;
+}
+
+.today-item:hover {
+  background: var(--surface-alt);
+  border-color: var(--border-light);
+}
+
+.today-item-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.today-item-title {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-body);
+}
+
+.today-item-meta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  display: flex;
+  gap: 0.75rem;
+  font-family: var(--font-ui);
+}
+
+.today-item-arrow {
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.today-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 4rem 1rem;
+  text-align: center;
+}
+
+.today-empty-text {
+  color: var(--text-muted);
+  font-size: 1rem;
+  font-family: var(--font-body);
+}
+
+.today-write-btn {
+  padding: 0.8rem 2.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: background 0.15s;
+  font-family: var(--font-ui);
+}
+
+.today-write-btn:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}

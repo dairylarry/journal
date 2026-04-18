@@ -1,0 +1,128 @@
+.detail {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 4rem;
+  min-height: 100dvh;
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.detail-edit-btn {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.45rem 1.1rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  transition: background 0.15s, color 0.15s;
+  cursor: pointer;
+}
+
+.detail-edit-btn:hover {
+  background: var(--surface-alt);
+  color: var(--text);
+}
+
+.detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.detail-date {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+}
+
+.detail-tags {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.detail-title {
+  font-family: var(--font-body);
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+  line-height: 1.35;
+}
+
+.detail-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.25rem 0;
+}
+
+.detail-notes-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+  font-family: var(--font-ui);
+}
+
+/* Markdown rendering */
+.detail-md {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--text);
+}
+
+.detail-md p { margin-bottom: 1em; }
+
+.detail-md h1, .detail-md h2, .detail-md h3 {
+  color: var(--accent);
+  margin: 1.25em 0 0.5em;
+  font-weight: 700;
+}
+
+.detail-md ul, .detail-md ol {
+  padding-left: 1.5em;
+  margin-bottom: 1em;
+}
+
+.detail-md li { margin-bottom: 0.3em; }
+
+.detail-md blockquote {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-light);
+  padding: 0.75em 1em;
+  color: var(--text);
+  margin: 1em 0;
+  border-radius: 0 6px 6px 0;
+}
+
+.detail-md code {
+  background: var(--surface-alt);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-size: 0.88em;
+  font-family: var(--font-ui);
+}
+
+.detail-md pre {
+  background: var(--surface-alt);
+  padding: 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin-bottom: 1em;
+}
+
+.detail-md strong { color: var(--text); }
+.detail-md em { color: var(--text); }
+.detail-md a { color: var(--accent); text-decoration: underline; }
+.detail-md hr { border: none; border-top: 1px solid var(--border); margin: 1.5em 0; }

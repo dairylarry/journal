@@ -1,0 +1,92 @@
+.tag-input-wrap {
+  position: relative;
+}
+
+.tag-input-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  min-height: 2.5rem;
+  align-items: center;
+  cursor: text;
+  transition: border-color 0.15s;
+}
+
+.tag-input-pills:focus-within {
+  border-color: var(--accent);
+}
+
+.tag-pill-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: var(--accent);
+  background: var(--accent-light);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+  font-family: var(--font-ui);
+}
+
+.tag-pill-remove {
+  font-size: 0.85rem;
+  color: var(--accent);
+  opacity: 0.6;
+  line-height: 1;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.tag-pill-remove:hover {
+  opacity: 1;
+}
+
+.tag-text-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 0.88rem;
+  color: var(--text);
+  min-width: 80px;
+  flex: 1;
+}
+
+.tag-text-input::placeholder {
+  color: var(--text-dim);
+}
+
+.tag-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(45, 53, 97, 0.1);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.tag-dropdown-item {
+  padding: 0.6rem 0.85rem;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: var(--font-ui);
+  transition: background 0.1s, color 0.1s;
+}
+
+.tag-dropdown-item:hover {
+  background: var(--accent-light);
+  color: var(--accent);
+}

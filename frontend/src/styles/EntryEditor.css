@@ -1,0 +1,178 @@
+.editor {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 4rem;
+  min-height: 100dvh;
+}
+
+.editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.editor-save-btn {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.45rem 1.1rem;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  transition: background 0.15s;
+  cursor: pointer;
+}
+
+.editor-save-btn:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.editor-save-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.editor-draft-notice {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  margin-bottom: 1rem;
+  font-family: var(--font-ui);
+}
+
+.editor-error {
+  color: var(--error);
+  font-size: 0.85rem;
+  background: var(--error-dim);
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.editor-title-input {
+  font-family: var(--font-body);
+  font-size: 1.3rem;
+  font-weight: 400;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  width: 100%;
+  padding: 0.5rem 0 0.75rem;
+  outline: none;
+  margin-bottom: 1.5rem;
+  transition: border-color 0.15s;
+}
+
+.editor-title-input:focus {
+  border-bottom-color: var(--accent);
+}
+
+.editor-title-input::placeholder {
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.editor-section-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  margin-top: 1.5rem;
+  font-family: var(--font-ui);
+}
+
+.editor-optional {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+
+.editor-md-wrap {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+/* Override @uiw/react-md-editor for light theme */
+.editor-md-wrap .w-md-editor {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.editor-md-wrap .w-md-editor-toolbar {
+  background: var(--surface) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.editor-md-wrap .w-md-editor-toolbar li button {
+  color: var(--text-muted) !important;
+}
+
+.editor-md-wrap .w-md-editor-toolbar li button:hover {
+  background: var(--surface-alt) !important;
+  color: var(--text) !important;
+}
+
+.editor-md-wrap .w-md-editor-text-input,
+.editor-md-wrap .w-md-editor-text textarea {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  caret-color: var(--text) !important;
+  font-family: var(--font-body) !important;
+  font-size: 1rem !important;
+  line-height: 1.8 !important;
+}
+
+.editor-md-wrap .w-md-editor-preview {
+  background: var(--bg) !important;
+  border-left: 1px solid var(--border) !important;
+}
+
+.editor-md-wrap .wmde-markdown {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  font-family: var(--font-body) !important;
+  font-size: 1rem !important;
+  line-height: 1.8 !important;
+}
+
+.editor-md-wrap .wmde-markdown h1,
+.editor-md-wrap .wmde-markdown h2,
+.editor-md-wrap .wmde-markdown h3 {
+  color: var(--accent) !important;
+  border-bottom-color: var(--border) !important;
+}
+
+.editor-md-wrap .wmde-markdown blockquote {
+  border-left-color: var(--accent) !important;
+  background: var(--accent-light) !important;
+  color: var(--text-muted) !important;
+}
+
+.editor-md-wrap .wmde-markdown code {
+  background: var(--surface-alt) !important;
+  color: var(--text) !important;
+}
+
+.editor-md-wrap .w-md-editor-bar {
+  display: none !important;
+}
+
+.editor-word-count {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-align: right;
+  margin-top: 0.4rem;
+  font-family: var(--font-ui);
+}

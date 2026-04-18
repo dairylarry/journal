@@ -1,0 +1,102 @@
+.entry-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  overflow: hidden;
+}
+
+.entry-card:hover {
+  border-color: var(--border-light);
+  background: var(--bg);
+}
+
+.entry-card-top {
+  padding: 0.9rem 1.1rem 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.entry-card-title {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+}
+
+.entry-card-date {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  white-space: nowrap;
+}
+
+.entry-card-tags {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.entry-card-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0;
+}
+
+.entry-card-body,
+.entry-card-notes {
+  padding: 0.75rem 1.1rem;
+}
+
+.entry-card-notes {
+  background: var(--surface-alt);
+}
+
+/* Markdown inside cards — slightly smaller than detail view */
+.entry-card-md {
+  font-family: var(--font-body);
+  font-size: 0.93rem;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.entry-card-md p { margin-bottom: 0.75em; }
+.entry-card-md p:last-child { margin-bottom: 0; }
+.entry-card-md h1, .entry-card-md h2, .entry-card-md h3 {
+  color: var(--accent);
+  margin: 0.75em 0 0.3em;
+}
+.entry-card-md ul, .entry-card-md ol {
+  padding-left: 1.25em;
+  margin-bottom: 0.75em;
+}
+.entry-card-md blockquote {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-light);
+  padding: 0.5em 0.75em;
+  color: var(--text);
+  margin: 0.75em 0;
+  border-radius: 0 4px 4px 0;
+}
+.entry-card-md code {
+  background: var(--surface-alt);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-size: 0.86em;
+}
+.entry-card-md strong { color: var(--text); }
+
+.entry-card-notes-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  font-family: var(--font-ui);
+}
