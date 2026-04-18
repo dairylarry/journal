@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { fetchEntries, computeStreaks, countWords, toLocalDate } from '../lib/entries'
+import EntryCard from '../components/EntryCard'
 import '../styles/Landing.css'
 
 export default function Landing() {
@@ -14,17 +15,17 @@ export default function Landing() {
   const [todayWords, setTodayWords] = useState(() => {
     try { return JSON.parse(localStorage.getItem('todayWordsCache') || 'null') } catch { return null }
   })
-  const [todayCount, setTodayCount] = useState(0)
+  const [todayEntries, setTodayEntries] = useState([])
 
   useEffect(() => {
     fetchEntries({ userId: user.userId }).then(entries => {
       const { currentStreak, longestStreak } = computeStreaks(entries)
       const today = toLocalDate()
-      const todayEntries = entries.filter(e => e.date === today)
-      const words = todayEntries.reduce((sum, e) => sum + (e.wordCount || 0), 0)
+      const te = entries.filter(e => e.date === today)
+      const words = te.reduce((sum, e) => sum + (e.wordCount || 0), 0)
       setStreak({ currentStreak, longestStreak })
       setTodayWords(words)
-      setTodayCount(todayEntries.length)
+      setTodayEntries(te)
       localStorage.setItem('streakCache', JSON.stringify({ currentStreak, longestStreak }))
       localStorage.setItem('todayWordsCache', JSON.stringify(words))
     }).catch(console.error)
@@ -62,9 +63,9 @@ export default function Landing() {
         <button className="landing-btn" onClick={handleToday}>
           <div>
             <div>Today</div>
-            {todayCount > 0 && (
+            {todayEntries.length > 0 && (
               <div className="landing-btn-sub">
-                {todayCount} {todayCount === 1 ? 'entry' : 'entries'}
+                {todayEntries.length} {todayEntries.length === 1 ? 'entry' : 'entries'}
               </div>
             )}
           </div>
@@ -83,6 +84,18 @@ export default function Landing() {
           <span className="landing-btn-arrow">›</span>
         </button>
       </nav>
+
+      {todayEntries.length > 0 && (
+        <div className="landing-today-entries">
+          {todayEntries.map(entry => (
+            <EntryCard
+              key={entry.createdAt}
+              entry={entry}
+              onClick={() => navigate(`/entries/${entry.entryId}`, { state: { entry } })}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

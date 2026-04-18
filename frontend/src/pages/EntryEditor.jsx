@@ -123,10 +123,12 @@ export default function EntryEditor() {
       const wordCount = countWords(body)
       const finalTitle = title.trim() || generateTitle(today, isNew ? todayCount : 0)
 
+      let savedEntryId
       if (isNew) {
+        savedEntryId = crypto.randomUUID()
         await createEntry({
           userId: user.userId,
-          entryId: crypto.randomUUID(),
+          entryId: savedEntryId,
           date: today,
           createdAt: new Date().toISOString(),
           title: finalTitle,
@@ -139,6 +141,7 @@ export default function EntryEditor() {
         localStorage.removeItem('streakCache')
         localStorage.removeItem('todayWordsCache')
       } else {
+        savedEntryId = existingEntry.entryId
         await updateEntry({
           userId: user.userId,
           createdAt: existingEntry.createdAt,
@@ -152,7 +155,21 @@ export default function EntryEditor() {
 
       localStorage.removeItem(draftKey)
       isDirtyRef.current = false
-      navigate('/today')
+      navigate(`/entries/${savedEntryId}`, {
+        replace: true,
+        state: {
+          entry: {
+            ...(existingEntry || {}),
+            entryId: savedEntryId,
+            date: today,
+            title: finalTitle,
+            body,
+            notes,
+            tags,
+            wordCount,
+          },
+        },
+      })
     } catch (err) {
       setError('Failed to save. Please try again.')
       console.error(err)

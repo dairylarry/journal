@@ -45,6 +45,15 @@
   background: var(--accent-light);
 }
 
+.month-grid-week--future {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.month-grid-week--future:hover {
+  background: transparent;
+}
+
 .month-grid-day {
   aspect-ratio: 1;
   display: flex;

@@ -47,7 +47,9 @@ export default function MonthGrid({
       <div className="month-grid-weeks">
         {weeks.map((week, wi) => {
           const nonNullDates = week.filter(Boolean)
-          const isSelected = selectedWeekDates &&
+          const isFuture = nonNullDates.length > 0 && nonNullDates[0] > today
+          const isSelected = !isFuture &&
+            selectedWeekDates &&
             nonNullDates.length > 0 &&
             nonNullDates.every(d => selectedWeekDates.includes(d)) &&
             nonNullDates.length === selectedWeekDates.filter(d => nonNullDates.includes(d)).length
@@ -55,8 +57,8 @@ export default function MonthGrid({
           return (
             <div
               key={wi}
-              className={`month-grid-week${isSelected ? ' month-grid-week--selected' : ''}`}
-              onClick={() => onWeekSelect(nonNullDates)}
+              className={`month-grid-week${isSelected ? ' month-grid-week--selected' : ''}${isFuture ? ' month-grid-week--future' : ''}`}
+              onClick={() => !isFuture && onWeekSelect(nonNullDates)}
             >
               {week.map((date, di) => {
                 if (!date) {

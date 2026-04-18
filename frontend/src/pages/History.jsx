@@ -6,6 +6,41 @@ import MonthGrid from '../components/MonthGrid'
 import EntryCard from '../components/EntryCard'
 import '../styles/History.css'
 
+function getWeeksForMonth(year, month) {
+  const pad = n => String(n).padStart(2, '0')
+  const firstDow = new Date(year, month, 1).getDay()
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const cells = [
+    ...Array(firstDow).fill(null),
+    ...Array.from({ length: daysInMonth }, (_, i) => `${year}-${pad(month + 1)}-${pad(i + 1)}`),
+  ]
+  const weeks = []
+  for (let i = 0; i < cells.length; i += 7) {
+    const week = cells.slice(i, i + 7)
+    while (week.length < 7) week.push(null)
+    weeks.push(week)
+  }
+  return weeks
+}
+
+// Returns the non-null dates of the week row containing dateStr
+function weekDatesForDate(year, month, dateStr) {
+  for (const week of getWeeksForMonth(year, month)) {
+    if (week.includes(dateStr)) return week.filter(Boolean)
+  }
+  return null
+}
+
+// Returns the non-null dates of the last week row that isn't entirely future
+function lastNonFutureWeek(year, month, today) {
+  const weeks = getWeeksForMonth(year, month)
+  for (let i = weeks.length - 1; i >= 0; i--) {
+    const nonNull = weeks[i].filter(Boolean)
+    if (nonNull.length && nonNull[0] <= today) return nonNull
+  }
+  return null
+}
+
 export default function History() {
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -13,10 +48,18 @@ export default function History() {
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedTags, setSelectedTags] = useState(new Set())
-  const [selectedWeekDates, setSelectedWeekDates] = useState(null)
-  const [currentMonth, setCurrentMonth] = useState(() => {
+  const [currentMonth] = useState(() => {
     const now = new Date()
     return { year: now.getFullYear(), month: now.getMonth() }
+  })
+  const [viewMonth, setViewMonth] = useState(() => {
+    const now = new Date()
+    return { year: now.getFullYear(), month: now.getMonth() }
+  })
+  const [selectedWeekDates, setSelectedWeekDates] = useState(() => {
+    const now = new Date()
+    const today = toLocalDate()
+    return weekDatesForDate(now.getFullYear(), now.getMonth(), today)
   })
 
   useEffect(() => {
@@ -61,34 +104,40 @@ export default function History() {
     return { year: y, month: m - 1 }
   }, [entries])
 
-  const today = new Date()
   const isAtCurrentMonth = (
-    currentMonth.year === today.getFullYear() &&
-    currentMonth.month === today.getMonth()
+    viewMonth.year === currentMonth.year &&
+    viewMonth.month === currentMonth.month
   )
   const isAtEarliestMonth = earliestMonth && (
-    currentMonth.year === earliestMonth.year &&
-    currentMonth.month === earliestMonth.month
+    viewMonth.year === earliestMonth.year &&
+    viewMonth.month === earliestMonth.month
   )
 
   function prevMonth() {
-    setCurrentMonth(prev => {
+    setViewMonth(prev => {
       let { year, month } = prev
       month--
       if (month < 0) { month = 11; year-- }
+      const today = toLocalDate()
+      setSelectedWeekDates(lastNonFutureWeek(year, month, today))
       return { year, month }
     })
-    setSelectedWeekDates(null)
   }
 
   function nextMonth() {
-    setCurrentMonth(prev => {
+    setViewMonth(prev => {
       let { year, month } = prev
       month++
       if (month > 11) { month = 0; year++ }
+      const today = toLocalDate()
+      const isNowCurrent = year === currentMonth.year && month === currentMonth.month
+      setSelectedWeekDates(
+        isNowCurrent
+          ? weekDatesForDate(year, month, today)
+          : lastNonFutureWeek(year, month, today)
+      )
       return { year, month }
     })
-    setSelectedWeekDates(null)
   }
 
   function toggleTag(tag) {
@@ -155,7 +204,7 @@ export default function History() {
               <span />
             )}
             <span className="month-label">
-              {new Date(currentMonth.year, currentMonth.month).toLocaleDateString('en-US', {
+              {new Date(viewMonth.year, viewMonth.month).toLocaleDateString('en-US', {
                 month: 'long', year: 'numeric',
               })}
             </span>
@@ -167,8 +216,8 @@ export default function History() {
           </div>
 
           <MonthGrid
-            year={currentMonth.year}
-            month={currentMonth.month}
+            year={viewMonth.year}
+            month={viewMonth.month}
             entryDates={filteredDateSet}
             streakDates={streakDates}
             selectedWeekDates={selectedWeekDates}
