@@ -8,8 +8,8 @@
 }
 
 .entry-card:hover {
-  border-color: var(--border-light);
-  background: var(--surface-hover);
+  border-color: var(--accent);
+  background: var(--surface);
 }
 
 .entry-card-top {
