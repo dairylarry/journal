@@ -197,32 +197,34 @@ export default function History() {
         <div className="history-empty">No entries yet.</div>
       ) : (
         <>
-          <div className="history-month-nav">
-            {!isAtEarliestMonth ? (
-              <button className="month-nav-btn" onClick={prevMonth}>‹</button>
-            ) : (
-              <span />
-            )}
-            <span className="month-label">
-              {new Date(viewMonth.year, viewMonth.month).toLocaleDateString('en-US', {
-                month: 'long', year: 'numeric',
-              })}
-            </span>
-            {!isAtCurrentMonth ? (
-              <button className="month-nav-btn" onClick={nextMonth}>›</button>
-            ) : (
-              <span />
-            )}
-          </div>
+          <div className="history-calendar-card">
+            <div className="history-month-nav">
+              {!isAtEarliestMonth ? (
+                <button className="month-nav-btn" onClick={prevMonth}>‹</button>
+              ) : (
+                <span />
+              )}
+              <span className="month-label">
+                {new Date(viewMonth.year, viewMonth.month).toLocaleDateString('en-US', {
+                  month: 'long', year: 'numeric',
+                })}
+              </span>
+              {!isAtCurrentMonth ? (
+                <button className="month-nav-btn" onClick={nextMonth}>›</button>
+              ) : (
+                <span />
+              )}
+            </div>
 
-          <MonthGrid
-            year={viewMonth.year}
-            month={viewMonth.month}
-            entryDates={filteredDateSet}
-            streakDates={streakDates}
-            selectedWeekDates={selectedWeekDates}
-            onWeekSelect={handleWeekSelect}
-          />
+            <MonthGrid
+              year={viewMonth.year}
+              month={viewMonth.month}
+              entryDates={filteredDateSet}
+              streakDates={streakDates}
+              selectedWeekDates={selectedWeekDates}
+              onWeekSelect={handleWeekSelect}
+            />
+          </div>
 
           {selectedWeekDates && weekCards.length > 0 && (
             <div className="history-cards">
