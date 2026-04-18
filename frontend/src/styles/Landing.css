@@ -1,7 +1,7 @@
 .landing {
-  max-width: 1000px;
+  max-width: 90vw;
   margin: 0 auto;
-  padding: 3rem 1.25rem 4rem;
+  padding: 3rem 0 4rem;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -12,6 +12,9 @@
 .landing-stats,
 .landing-nav {
   max-width: 680px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .landing-wordmark {

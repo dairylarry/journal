@@ -3,8 +3,8 @@
   "short_name": "Journal",
   "start_url": "/journal/",
   "display": "standalone",
-  "background_color": "#78d1e5",
-  "theme_color": "#78d1e5",
+  "background_color": "#faf4e8",
+  "theme_color": "#faf4e8",
   "icons": [
     {
       "src": "/journal/icon-192.png",
