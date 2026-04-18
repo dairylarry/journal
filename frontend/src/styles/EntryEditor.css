@@ -1,7 +1,6 @@
 .editor {
-  max-width: 780px;
-  margin: 0 auto;
-  padding: 1.5rem 1.25rem 4rem;
+  max-width: 100%;
+  padding: 1.5rem 2rem 4rem;
   min-height: 100dvh;
 }
 
@@ -206,8 +205,19 @@
   display: none !important;
 }
 
+.editor-md-wrap .w-md-editor-content {
+  overflow: hidden !important;
+}
+
 .editor-md-wrap .w-md-editor-text {
   overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+}
+
+.editor-md-wrap .w-md-editor-text-input,
+.editor-md-wrap .w-md-editor-text textarea {
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
 }
 
 .editor-word-count {
