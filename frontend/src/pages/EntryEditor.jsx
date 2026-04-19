@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import MDEditor from '@uiw/react-md-editor'
 import { useAuth } from '../context/AuthContext'
-import { createEntry, updateEntry, fetchEntries, countWords, toLocalDate } from '../lib/entries'
+import { createEntry, updateEntry, fetchEntries, countWords, toLocalDate, queueOfflineWrite } from '../lib/entries'
 import TagInput from '../components/TagInput'
 import '../styles/EntryEditor.css'
 
@@ -123,9 +123,8 @@ export default function EntryEditor() {
       const wordCount = countWords(body)
       const finalTitle = title.trim() || generateTitle(today, isNew ? todayCount : 0)
 
-      let savedEntryId
+      let savedEntryId = isNew ? crypto.randomUUID() : existingEntry.entryId
       if (isNew) {
-        savedEntryId = crypto.randomUUID()
         await createEntry({
           userId: user.userId,
           entryId: savedEntryId,
@@ -141,7 +140,6 @@ export default function EntryEditor() {
         localStorage.removeItem('streakCache')
         localStorage.removeItem('todayWordsCache')
       } else {
-        savedEntryId = existingEntry.entryId
         await updateEntry({
           userId: user.userId,
           createdAt: existingEntry.createdAt,
@@ -171,8 +169,31 @@ export default function EntryEditor() {
         },
       })
     } catch (err) {
-      setError('Failed to save. Please try again.')
-      console.error(err)
+      if (!navigator.onLine) {
+        const entryData = {
+          userId: user.userId,
+          entryId: savedEntryId,
+          date: today,
+          createdAt: isNew ? new Date().toISOString() : existingEntry.createdAt,
+          updatedAt: new Date().toISOString(),
+          title: finalTitle,
+          body,
+          notes,
+          tags,
+          wordCount,
+        }
+        queueOfflineWrite(isNew ? 'create' : 'update', entryData)
+        localStorage.removeItem(draftKey)
+        localStorage.setItem('lastEntryDate', today)
+        isDirtyRef.current = false
+        navigate(`/entries/${savedEntryId}`, {
+          replace: true,
+          state: { entry: entryData, offlineSaved: true },
+        })
+      } else {
+        setError('Failed to save. Please try again.')
+        console.error(err)
+      }
     } finally {
       setSaving(false)
     }

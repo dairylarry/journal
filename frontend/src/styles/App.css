@@ -100,6 +100,29 @@ a {
   margin: 1rem 0;
 }
 
+/* Offline banner */
+.offline-banner {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text);
+  color: #fff;
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 20px;
+  z-index: 1000;
+  opacity: 0.88;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.offline-banner--synced {
+  background: var(--accent);
+  opacity: 1;
+}
+
 /* Empty state */
 .empty-state {
   text-align: center;

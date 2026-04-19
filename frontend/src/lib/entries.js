@@ -1,6 +1,55 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { DynamoDBDocumentClient, PutCommand, UpdateCommand, QueryCommand } from '@aws-sdk/lib-dynamodb'
 
+// ── Offline cache helpers ──────────────────────────────────────────────────
+const CACHE_KEY = 'entriesCache'
+const PENDING_KEY = 'pendingWrites'
+
+function loadCache() {
+  try { return JSON.parse(localStorage.getItem(CACHE_KEY)) } catch { return null }
+}
+
+function saveCache(entries) {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify(entries)) } catch {}
+}
+
+function patchCache(entry, type) {
+  const cache = loadCache() || []
+  if (type === 'create') {
+    saveCache([entry, ...cache])
+  } else {
+    saveCache(cache.map(e => e.entryId === entry.entryId ? { ...e, ...entry } : e))
+  }
+}
+
+export function queueOfflineWrite(type, payload) {
+  const queue = JSON.parse(localStorage.getItem(PENDING_KEY) || '[]')
+  queue.push({ type, payload })
+  localStorage.setItem(PENDING_KEY, JSON.stringify(queue))
+  patchCache(payload, type)
+}
+
+export function hasPendingWrites() {
+  try { return JSON.parse(localStorage.getItem(PENDING_KEY) || '[]').length > 0 } catch { return false }
+}
+
+export async function flushPendingWrites() {
+  const queue = JSON.parse(localStorage.getItem(PENDING_KEY) || '[]')
+  if (!queue.length) return 0
+  const remaining = []
+  for (const item of queue) {
+    try {
+      if (item.type === 'create') await createEntry(item.payload)
+      else await updateEntry(item.payload)
+    } catch {
+      remaining.push(item)
+    }
+  }
+  localStorage.setItem(PENDING_KEY, JSON.stringify(remaining))
+  return queue.length - remaining.length
+}
+// ──────────────────────────────────────────────────────────────────────────
+
 const TABLE = 'journal_entries'
 
 const dynamoClient = new DynamoDBClient({
@@ -64,16 +113,24 @@ export async function updateEntry({ userId, createdAt, title, body, notes, tags,
 }
 
 export async function fetchEntries({ userId }) {
-  const result = await docClient.send(new QueryCommand({
-    TableName: TABLE,
-    KeyConditionExpression: 'userId = :pk',
-    ExpressionAttributeValues: { ':pk': `USER#${userId}` },
-    ScanIndexForward: false,
-  }))
-  return (result.Items || []).map(item => ({
-    ...item,
-    tags: Array.isArray(item.tags) ? item.tags : item.tags ? [...item.tags] : [],
-  }))
+  try {
+    const result = await docClient.send(new QueryCommand({
+      TableName: TABLE,
+      KeyConditionExpression: 'userId = :pk',
+      ExpressionAttributeValues: { ':pk': `USER#${userId}` },
+      ScanIndexForward: false,
+    }))
+    const entries = (result.Items || []).map(item => ({
+      ...item,
+      tags: Array.isArray(item.tags) ? item.tags : item.tags ? [...item.tags] : [],
+    }))
+    saveCache(entries)
+    return entries
+  } catch (err) {
+    const cache = loadCache()
+    if (cache) return cache
+    throw err
+  }
 }
 
 export function computeStreaks(entries) {
