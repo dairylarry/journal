@@ -2,6 +2,37 @@
   position: relative;
 }
 
+.tag-frequent {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.tag-frequent-pill {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px dashed var(--border-light);
+  border-radius: 4px;
+  padding: 0.2rem 0.55rem;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, border-style 0.15s;
+}
+
+.tag-frequent-pill:hover {
+  background: var(--accent-light);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.tag-frequent-pill--active {
+  background: var(--accent-light);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
 .tag-input-pills {
   display: flex;
   flex-wrap: wrap;

@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import '../styles/TagInput.css'
 
-export default function TagInput({ value, onChange, suggestions }) {
+export default function TagInput({ value, onChange, suggestions, frequent = [] }) {
   const [inputValue, setInputValue] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
   const inputRef = useRef(null)
@@ -23,6 +23,11 @@ export default function TagInput({ value, onChange, suggestions }) {
     onChange(value.filter(t => t !== tag))
   }
 
+  function toggleTag(tag) {
+    if (value.includes(tag)) removeTag(tag)
+    else onChange([...value, tag])
+  }
+
   function handleKeyDown(e) {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault()
@@ -37,6 +42,23 @@ export default function TagInput({ value, onChange, suggestions }) {
 
   return (
     <div className="tag-input-wrap">
+      {frequent.length > 0 && (
+        <div className="tag-frequent">
+          {frequent.map(tag => {
+            const active = value.includes(tag)
+            return (
+              <button
+                key={tag}
+                type="button"
+                className={`tag-frequent-pill${active ? ' tag-frequent-pill--active' : ''}`}
+                onClick={() => toggleTag(tag)}
+              >
+                #{tag}
+              </button>
+            )
+          })}
+        </div>
+      )}
       <div
         className="tag-input-pills"
         onClick={() => inputRef.current?.focus()}

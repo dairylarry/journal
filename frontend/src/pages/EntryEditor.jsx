@@ -291,6 +291,7 @@ export default function EntryEditor() {
         value={tags}
         onChange={v => { setTags(v); markDirty() }}
         suggestions={allTags}
+        frequent={['spanish']}
       />
     </div>
   )
