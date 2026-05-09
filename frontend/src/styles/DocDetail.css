@@ -198,6 +198,7 @@
   transition: opacity 0.15s;
 }
 .doc-bookmark-clear:hover { opacity: 1; }
+.doc-bookmark-clear--confirm { opacity: 1; color: var(--error); font-weight: 600; }
 
 /* ── Highlights ── */
 .reader-highlight {

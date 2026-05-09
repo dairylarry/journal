@@ -138,10 +138,13 @@ export default function DocDetail() {
   const [activeAnnotation, setActiveAnnotation] = useState(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [confirmClearBookmarks, setConfirmClearBookmarks] = useState(false)
 
   const [scrollY, setScrollY] = useState(0)
   const [maxScroll, setMaxScroll] = useState(0)
   const [isScrolling, setIsScrolling] = useState(false)
+  const [hasPrevBookmark, setHasPrevBookmark] = useState(false)
+  const [hasNextBookmark, setHasNextBookmark] = useState(false)
 
   const textRef = useRef(null)
   const selTimerRef = useRef(null)
@@ -184,6 +187,19 @@ export default function DocDetail() {
     return () => localStorage.setItem(`scrollPos_${docId}`, String(window.scrollY))
   }, [docId])
 
+  function updateBookmarkNav() {
+    const seen = new Set()
+    const bkEls = [...document.querySelectorAll('[data-bk-idx]')].filter(el => {
+      const idx = el.dataset.bkIdx
+      if (seen.has(idx)) return false
+      seen.add(idx)
+      return true
+    })
+    const mid = window.innerHeight / 2
+    setHasPrevBookmark(bkEls.some(el => el.getBoundingClientRect().top < mid - 50))
+    setHasNextBookmark(bkEls.some(el => el.getBoundingClientRect().top > mid + 50))
+  }
+
   // Scroll tracking
   useEffect(() => {
     function onScroll() {
@@ -192,6 +208,7 @@ export default function DocDetail() {
       setIsScrolling(true)
       clearTimeout(scrollFadeRef.current)
       scrollFadeRef.current = setTimeout(() => setIsScrolling(false), 2000)
+      updateBookmarkNav()
     }
     function onResize() { setMaxScroll(document.documentElement.scrollHeight - window.innerHeight) }
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -227,6 +244,9 @@ export default function DocDetail() {
       clearTimeout(selTimerRef.current)
     }
   }, [])
+
+  // Recompute bookmark nav when bookmarks change
+  useEffect(() => { updateBookmarkNav() }, [bookmarks]) // eslint-disable-line
 
   // Close font controls on outside click
   useEffect(() => {
@@ -314,7 +334,7 @@ export default function DocDetail() {
 
   const atTop = scrollY <= 80
   const atBottom = maxScroll > 0 && scrollY >= maxScroll - 80
-  const showScrollPill = !atTop || !atBottom || bookmarks.length > 0
+  const showScrollPill = !atTop || !atBottom || hasPrevBookmark || hasNextBookmark
 
   if (loading) return <div className="page-loading">loading…</div>
   if (!doc) return null
@@ -340,9 +360,23 @@ export default function DocDetail() {
           {bookmarks.length > 0 && (
             <div className="doc-bookmark-info">
               <span className="doc-bookmark-count">◆ {bookmarks.length}</span>
-              <button className="doc-bookmark-clear" onClick={e => { e.stopPropagation(); clearAllBookmarks() }}>
-                clear all
-              </button>
+              {confirmClearBookmarks ? (
+                <>
+                  <button className="doc-bookmark-clear doc-bookmark-clear--confirm"
+                    onClick={e => { e.stopPropagation(); clearAllBookmarks(); setConfirmClearBookmarks(false) }}>
+                    confirm
+                  </button>
+                  <button className="doc-bookmark-clear"
+                    onClick={e => { e.stopPropagation(); setConfirmClearBookmarks(false) }}>
+                    cancel
+                  </button>
+                </>
+              ) : (
+                <button className="doc-bookmark-clear"
+                  onClick={e => { e.stopPropagation(); setConfirmClearBookmarks(true) }}>
+                  clear all
+                </button>
+              )}
             </div>
           )}
 
@@ -468,11 +502,11 @@ export default function DocDetail() {
             <button className="reader-scroll-btn" title="Top"
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>↑</button>
           )}
-          {bookmarks.length > 0 && (
+          {hasPrevBookmark && (
             <button className="reader-scroll-btn reader-scroll-btn--bkm" title="Previous bookmark"
               onClick={() => scrollToBookmark('prev')}>▲</button>
           )}
-          {bookmarks.length > 0 && (
+          {hasNextBookmark && (
             <button className="reader-scroll-btn reader-scroll-btn--bkm" title="Next bookmark"
               onClick={() => scrollToBookmark('next')}>▼</button>
           )}
