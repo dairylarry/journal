@@ -8,7 +8,6 @@ const DEFAULT_FONT_SIZE = 17
 const FONT_STEP = 2
 const FONT_MIN = 12
 const FONT_MAX = 36
-const BOOKMARK_THRESHOLD = 80 // px — how close to an existing bookmark counts as "at it"
 
 // ── Text rendering helpers ──────────────────────────────────────────────────
 
@@ -33,8 +32,9 @@ function getCharOffset(container, node, offset) {
 }
 
 function parseMarkup(raw) {
+  // Match bold+underline (**__text__**), bold (**text**), underline (__text__)
   const segs = []
-  const re = /\*\*(.+?)\*\*|__(.+?)__/gs
+  const re = /\*\*__(.+?)__\*\*|\*\*(.+?)\*\*|__(.+?)__/gs
   let last = 0, visPos = 0, m
   while ((m = re.exec(raw)) !== null) {
     if (m.index > last) {
@@ -42,11 +42,13 @@ function parseMarkup(raw) {
       segs.push({ text: t, bold: false, underline: false, visStart: visPos, visEnd: visPos + t.length })
       visPos += t.length
     }
-    const isBold = m[1] !== undefined
-    const inner = isBold ? m[1] : m[2]
-    segs.push({ text: inner, bold: isBold, underline: !isBold, visStart: visPos, visEnd: visPos + inner.length })
+    const bothBU = m[1] !== undefined
+    const isBold = bothBU || m[2] !== undefined
+    const isUnder = bothBU || m[3] !== undefined
+    const inner = m[1] ?? m[2] ?? m[3]
+    segs.push({ text: inner, bold: isBold, underline: isUnder, visStart: visPos, visEnd: visPos + inner.length })
     visPos += inner.length
-    last = m.index + 4 + inner.length
+    last = m.index + m[0].length
   }
   if (last < raw.length) {
     const t = raw.slice(last)
@@ -55,25 +57,33 @@ function parseMarkup(raw) {
   return segs
 }
 
-function buildRenderSegments(raw, highlights) {
+// Builds render segments handling both highlights and bookmarks simultaneously
+function buildRenderSegments(raw, highlights, bookmarks) {
   const markupSegs = parseMarkup(raw)
-  const sorted = (highlights || []).map((h, i) => ({ ...h, idx: i })).sort((a, b) => a.start - b.start)
-  if (!sorted.length) return markupSegs.map(s => ({ ...s, highlighted: false, hlIdx: -1 }))
+  const hlSorted = (highlights || []).map((h, i) => ({ ...h, idx: i })).sort((a, b) => a.start - b.start)
+  const bkSorted = (bookmarks || []).map((b, i) => ({ ...b, idx: i })).sort((a, b) => a.start - b.start)
+
   const result = []
   for (const seg of markupSegs) {
-    let cursor = seg.visStart
-    for (const hl of sorted) {
-      if (hl.end <= cursor) continue
-      if (hl.start >= seg.visEnd) break
-      const clipStart = Math.max(hl.start, cursor)
-      const clipEnd = Math.min(hl.end, seg.visEnd)
-      if (cursor < clipStart)
-        result.push({ ...seg, text: seg.text.slice(cursor - seg.visStart, clipStart - seg.visStart), highlighted: false, hlIdx: -1 })
-      result.push({ ...seg, text: seg.text.slice(clipStart - seg.visStart, clipEnd - seg.visStart), highlighted: true, hlIdx: hl.idx })
-      cursor = clipEnd
+    const pts = new Set([seg.visStart, seg.visEnd])
+    for (const ann of [...hlSorted, ...bkSorted]) {
+      if (ann.end <= seg.visStart || ann.start >= seg.visEnd) continue
+      pts.add(Math.max(ann.start, seg.visStart))
+      pts.add(Math.min(ann.end, seg.visEnd))
     }
-    if (cursor < seg.visEnd)
-      result.push({ ...seg, text: seg.text.slice(cursor - seg.visStart), highlighted: false, hlIdx: -1 })
+    const sorted = [...pts].sort((a, b) => a - b)
+    for (let i = 0; i < sorted.length - 1; i++) {
+      const from = sorted[i], to = sorted[i + 1]
+      const text = seg.text.slice(from - seg.visStart, to - seg.visStart)
+      if (!text) continue
+      const hl = hlSorted.find(h => h.start <= from && h.end >= to)
+      const bk = bkSorted.find(b => b.start <= from && b.end >= to)
+      result.push({
+        ...seg, text,
+        highlighted: !!hl, hlIdx: hl ? hl.idx : -1,
+        bookmarked: !!bk, bkIdx: bk ? bk.idx : -1,
+      })
+    }
   }
   return result
 }
@@ -86,6 +96,25 @@ function mergeAndAdd(existing, newH) {
     else merged.push({ ...h })
   }
   return merged
+}
+
+function scrollToBookmark(direction) {
+  const seen = new Set()
+  const bkEls = [...document.querySelectorAll('[data-bk-idx]')].filter(el => {
+    const idx = el.dataset.bkIdx
+    if (seen.has(idx)) return false
+    seen.add(idx)
+    return true
+  })
+  if (!bkEls.length) return
+  const mid = window.innerHeight / 2
+  if (direction === 'prev') {
+    const el = [...bkEls].reverse().find(el => el.getBoundingClientRect().top < mid - 50)
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  } else {
+    const el = bkEls.find(el => el.getBoundingClientRect().top > mid + 50)
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
 }
 
 // ── Component ───────────────────────────────────────────────────────────────
@@ -105,12 +134,11 @@ export default function DocDetail() {
   )
   const [showFontControls, setShowFontControls] = useState(false)
   const [pendingSelection, setPendingSelection] = useState(null)
-  const [activeHlIdx, setActiveHlIdx] = useState(null)
-  const [activeHlPos, setActiveHlPos] = useState(null)
+  // { hlIdx, bkIdx, x, y } — which annotation was tapped
+  const [activeAnnotation, setActiveAnnotation] = useState(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
-  // Scroll state
   const [scrollY, setScrollY] = useState(0)
   const [maxScroll, setMaxScroll] = useState(0)
   const [isScrolling, setIsScrolling] = useState(false)
@@ -136,7 +164,7 @@ export default function DocDetail() {
       .finally(() => setLoading(false))
   }, []) // eslint-disable-line
 
-  // Auto-restore scroll position after doc is ready
+  // Auto-restore scroll position
   useEffect(() => {
     if (!doc) return
     const saved = localStorage.getItem(`scrollPos_${docId}`)
@@ -156,20 +184,16 @@ export default function DocDetail() {
     return () => localStorage.setItem(`scrollPos_${docId}`, String(window.scrollY))
   }, [docId])
 
-  // Scroll event → update position + fade controls
+  // Scroll tracking
   useEffect(() => {
     function onScroll() {
-      const y = window.scrollY
-      const max = document.documentElement.scrollHeight - window.innerHeight
-      setScrollY(y)
-      setMaxScroll(max)
+      setScrollY(window.scrollY)
+      setMaxScroll(document.documentElement.scrollHeight - window.innerHeight)
       setIsScrolling(true)
       clearTimeout(scrollFadeRef.current)
       scrollFadeRef.current = setTimeout(() => setIsScrolling(false), 2000)
     }
-    function onResize() {
-      setMaxScroll(document.documentElement.scrollHeight - window.innerHeight)
-    }
+    function onResize() { setMaxScroll(document.documentElement.scrollHeight - window.innerHeight) }
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onResize)
     return () => {
@@ -179,7 +203,7 @@ export default function DocDetail() {
     }
   }, [])
 
-  // Text selection for highlights
+  // Text selection for highlights/bookmarks
   useEffect(() => {
     function onSelectionChange() {
       clearTimeout(selTimerRef.current)
@@ -194,7 +218,7 @@ export default function DocDetail() {
         const range = sel.getRangeAt(0)
         const start = getCharOffset(textRef.current, range.startContainer, range.startOffset)
         const end = getCharOffset(textRef.current, range.endContainer, range.endOffset)
-        if (start < end) { setActiveHlIdx(null); setPendingSelection({ start, end }) }
+        if (start < end) { setActiveAnnotation(null); setPendingSelection({ start, end }) }
       }, 250)
     }
     document.addEventListener('selectionchange', onSelectionChange)
@@ -204,7 +228,7 @@ export default function DocDetail() {
     }
   }, [])
 
-  // Close font controls popover on outside click
+  // Close font controls on outside click
   useEffect(() => {
     if (!showFontControls) return
     function onOutside(e) {
@@ -238,9 +262,31 @@ export default function DocDetail() {
     if (!doc) return
     const next = highlights.filter((_, i) => i !== idx)
     setHighlights(next)
-    setActiveHlIdx(null)
-    setActiveHlPos(null)
+    setActiveAnnotation(null)
     try { await updateHighlights({ userId: user.userId, createdAt: doc.createdAt, highlights: next }) } catch {}
+  }
+
+  async function addBookmark() {
+    if (!pendingSelection || !doc) return
+    const next = [...bookmarks, { start: pendingSelection.start, end: pendingSelection.end, savedAt: new Date().toISOString() }]
+      .sort((a, b) => a.start - b.start)
+    setBookmarks(next)
+    clearSelection()
+    try { await updateBookmarks({ userId: user.userId, createdAt: doc.createdAt, bookmarks: next }) } catch {}
+  }
+
+  async function removeBookmark(idx) {
+    if (!doc) return
+    const next = bookmarks.filter((_, i) => i !== idx)
+    setBookmarks(next)
+    setActiveAnnotation(null)
+    try { await updateBookmarks({ userId: user.userId, createdAt: doc.createdAt, bookmarks: next }) } catch {}
+  }
+
+  async function clearAllBookmarks() {
+    if (!doc) return
+    setBookmarks([])
+    try { await updateBookmarks({ userId: user.userId, createdAt: doc.createdAt, bookmarks: [] }) } catch {}
   }
 
   function changeFontSize(delta) {
@@ -256,16 +302,6 @@ export default function DocDetail() {
     localStorage.setItem('readerFontSize', String(DEFAULT_FONT_SIZE))
   }
 
-  function handleBookmarkToggle() {
-    const currentY = window.scrollY
-    const nearbyIdx = bookmarks.findIndex(b => Math.abs(b.scrollY - currentY) < BOOKMARK_THRESHOLD)
-    const next = nearbyIdx >= 0
-      ? bookmarks.filter((_, i) => i !== nearbyIdx)
-      : [...bookmarks, { scrollY: currentY, savedAt: new Date().toISOString() }].sort((a, b) => a.scrollY - b.scrollY)
-    setBookmarks(next)
-    if (doc) updateBookmarks({ userId: user.userId, createdAt: doc.createdAt, bookmarks: next }).catch(() => {})
-  }
-
   async function handleDelete() {
     setDeleting(true)
     try {
@@ -274,20 +310,16 @@ export default function DocDetail() {
     } catch { setDeleting(false) }
   }
 
-  // ── Derived values ─────────────────────────────────────────────────────────
-
-  const nearCurrentBookmark = bookmarks.some(b => Math.abs(b.scrollY - scrollY) < BOOKMARK_THRESHOLD)
-  const prevBookmark = [...bookmarks].reverse().find(b => b.scrollY < scrollY - BOOKMARK_THRESHOLD / 2)
-  const nextBookmark = bookmarks.find(b => b.scrollY > scrollY + BOOKMARK_THRESHOLD / 2)
+  // ── Derived ────────────────────────────────────────────────────────────────
 
   const atTop = scrollY <= 80
   const atBottom = maxScroll > 0 && scrollY >= maxScroll - 80
-  const showScrollPill = !atTop || !atBottom || prevBookmark || nextBookmark
+  const showScrollPill = !atTop || !atBottom || bookmarks.length > 0
 
   if (loading) return <div className="page-loading">loading…</div>
   if (!doc) return null
 
-  const segments = buildRenderSegments(doc.body || '', highlights)
+  const segments = buildRenderSegments(doc.body || '', highlights, bookmarks)
 
   const createdLabel = new Date(doc.createdAt).toLocaleDateString('en-US', {
     month: 'long', day: 'numeric', year: 'numeric',
@@ -297,15 +329,23 @@ export default function DocDetail() {
     : null
 
   return (
-    <div
-      className="doc-detail"
-      onClick={() => { setActiveHlIdx(null); setActiveHlPos(null) }}
-    >
+    <div className="doc-detail" onClick={() => setActiveAnnotation(null)}>
+
       {/* ── Header ── */}
       <div className="doc-detail-header">
         <button className="btn-back" onClick={() => navigate('/reader')}>← reader</button>
 
         <div className="doc-detail-actions">
+          {/* Bookmark counter + clear all */}
+          {bookmarks.length > 0 && (
+            <div className="doc-bookmark-info">
+              <span className="doc-bookmark-count">◆ {bookmarks.length}</span>
+              <button className="doc-bookmark-clear" onClick={e => { e.stopPropagation(); clearAllBookmarks() }}>
+                clear all
+              </button>
+            </div>
+          )}
+
           {/* Font size */}
           <div className="doc-font-wrap" ref={fontControlsRef}>
             <button
@@ -323,17 +363,6 @@ export default function DocDetail() {
             )}
           </div>
 
-          {/* Bookmark */}
-          <button
-            className={`doc-action-btn doc-bookmark-btn${nearCurrentBookmark ? ' doc-bookmark-btn--active' : ''}`}
-            onClick={e => { e.stopPropagation(); handleBookmarkToggle() }}
-            title={nearCurrentBookmark ? 'Remove bookmark' : 'Add bookmark'}
-          >
-            {bookmarks.length > 0
-              ? <>{nearCurrentBookmark ? '▼' : '◆'} <span className="doc-bookmark-count">{bookmarks.length}</span></>
-              : '◇'}
-          </button>
-
           {/* Edit */}
           <button
             className="doc-action-btn"
@@ -348,19 +377,18 @@ export default function DocDetail() {
           {/* Delete */}
           {confirmDelete ? (
             <>
-              <button
-                className="doc-delete-confirm-btn"
-                disabled={deleting}
-                onClick={e => { e.stopPropagation(); handleDelete() }}
-              >
+              <button className="doc-delete-confirm-btn" disabled={deleting}
+                onClick={e => { e.stopPropagation(); handleDelete() }}>
                 {deleting ? 'deleting…' : 'confirm delete'}
               </button>
-              <button className="doc-action-btn" onClick={e => { e.stopPropagation(); setConfirmDelete(false) }}>
+              <button className="doc-action-btn"
+                onClick={e => { e.stopPropagation(); setConfirmDelete(false) }}>
                 Cancel
               </button>
             </>
           ) : (
-            <button className="doc-delete-btn" onClick={e => { e.stopPropagation(); setConfirmDelete(true) }}>
+            <button className="doc-delete-btn"
+              onClick={e => { e.stopPropagation(); setConfirmDelete(true) }}>
               Delete
             </button>
           )}
@@ -380,41 +408,52 @@ export default function DocDetail() {
         </div>
 
         {doc.title && <h1 className="doc-detail-title">{doc.title}</h1>}
-
         <hr className="doc-detail-divider" />
 
-        <div
-          ref={textRef}
-          className="doc-detail-body"
-          style={{ fontSize: `${fontSize}px` }}
-        >
+        <div ref={textRef} className="doc-detail-body" style={{ fontSize: `${fontSize}px` }}>
           {segments.map((seg, i) => {
-            const inner = seg.bold
-              ? <strong key="i">{seg.text}</strong>
+            const inner = seg.bold && seg.underline
+              ? <strong key="i"><u>{seg.text}</u></strong>
+              : seg.bold ? <strong key="i">{seg.text}</strong>
               : seg.underline ? <u key="i">{seg.text}</u>
               : seg.text
-            return seg.highlighted ? (
-              <mark
-                key={i}
-                className="reader-highlight"
-                onClick={e => {
-                  e.stopPropagation()
-                  clearTimeout(selTimerRef.current)
-                  setPendingSelection(null)
-                  setActiveHlIdx(seg.hlIdx)
-                  setActiveHlPos({ x: e.clientX, y: e.clientY })
-                }}
-              >{inner}</mark>
-            ) : (
-              <span key={i}>{inner}</span>
-            )
+
+            if (seg.highlighted || seg.bookmarked) {
+              const cls = [
+                seg.highlighted ? 'reader-highlight' : '',
+                seg.bookmarked ? 'reader-bookmark' : '',
+              ].filter(Boolean).join(' ')
+
+              return (
+                <mark
+                  key={i}
+                  className={cls}
+                  data-bk-idx={seg.bookmarked ? seg.bkIdx : undefined}
+                  onClick={e => {
+                    e.stopPropagation()
+                    clearTimeout(selTimerRef.current)
+                    setPendingSelection(null)
+                    setActiveAnnotation({
+                      hlIdx: seg.highlighted ? seg.hlIdx : null,
+                      bkIdx: seg.bookmarked ? seg.bkIdx : null,
+                      x: e.clientX,
+                      y: e.clientY,
+                    })
+                  }}
+                >{inner}</mark>
+              )
+            }
+            return <span key={i}>{inner}</span>
           })}
         </div>
       </div>
 
-      {/* ── Highlight action bar (bottom center) ── */}
+      {/* ── Highlight / bookmark action bar (bottom center) ── */}
       {pendingSelection && (
         <div className="reader-action-bar">
+          <button className="reader-action-btn reader-action-btn--bookmark" onClick={addBookmark}>
+            Bookmark
+          </button>
           <button className="reader-action-btn reader-action-btn--highlight" onClick={addHighlight}>
             Highlight
           </button>
@@ -429,13 +468,13 @@ export default function DocDetail() {
             <button className="reader-scroll-btn" title="Top"
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>↑</button>
           )}
-          {prevBookmark && (
+          {bookmarks.length > 0 && (
             <button className="reader-scroll-btn reader-scroll-btn--bkm" title="Previous bookmark"
-              onClick={() => window.scrollTo({ top: prevBookmark.scrollY, behavior: 'smooth' })}>▲</button>
+              onClick={() => scrollToBookmark('prev')}>▲</button>
           )}
-          {nextBookmark && (
+          {bookmarks.length > 0 && (
             <button className="reader-scroll-btn reader-scroll-btn--bkm" title="Next bookmark"
-              onClick={() => window.scrollTo({ top: nextBookmark.scrollY, behavior: 'smooth' })}>▼</button>
+              onClick={() => scrollToBookmark('next')}>▼</button>
           )}
           {!atBottom && (
             <button className="reader-scroll-btn" title="Bottom"
@@ -444,18 +483,23 @@ export default function DocDetail() {
         </div>
       )}
 
-      {/* ── Remove highlight popup ── */}
-      {activeHlIdx !== null && activeHlPos && (
+      {/* ── Remove annotation popup ── */}
+      {activeAnnotation && (
         <div
           className="reader-remove-popup"
           style={{
             position: 'fixed',
-            top: Math.max(8, activeHlPos.y - 52),
-            left: Math.min(window.innerWidth - 180, Math.max(8, activeHlPos.x - 80)),
+            top: Math.max(8, activeAnnotation.y - 52),
+            left: Math.min(window.innerWidth - 180, Math.max(8, activeAnnotation.x - 80)),
           }}
           onClick={e => e.stopPropagation()}
         >
-          <button onClick={() => removeHighlight(activeHlIdx)}>Remove highlight</button>
+          {activeAnnotation.hlIdx !== null && (
+            <button onClick={() => removeHighlight(activeAnnotation.hlIdx)}>Remove highlight</button>
+          )}
+          {activeAnnotation.bkIdx !== null && (
+            <button onClick={() => removeBookmark(activeAnnotation.bkIdx)}>Remove bookmark</button>
+          )}
         </div>
       )}
     </div>

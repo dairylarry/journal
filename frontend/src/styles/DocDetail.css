@@ -168,6 +168,37 @@
   user-select: text;
 }
 
+/* Bookmark counter in header */
+.doc-bookmark-info {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.38rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: var(--accent-light);
+}
+
+.doc-bookmark-count {
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.doc-bookmark-clear {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0.7;
+  padding: 0;
+  transition: opacity 0.15s;
+}
+.doc-bookmark-clear:hover { opacity: 1; }
+
 /* ── Highlights ── */
 .reader-highlight {
   background: #ffe066;
@@ -176,6 +207,22 @@
   transition: background 0.1s;
 }
 .reader-highlight:hover { background: #ffd633; }
+
+/* ── Bookmarks ── */
+.reader-bookmark {
+  background: none;
+  border-bottom: 2.5px solid var(--accent);
+  border-radius: 0;
+  cursor: pointer;
+  transition: border-color 0.1s;
+}
+.reader-bookmark:hover { border-bottom-color: var(--accent-hover); }
+
+/* Both highlight + bookmark */
+.reader-highlight.reader-bookmark {
+  background: #ffe066;
+  border-bottom: 2.5px solid var(--accent);
+}
 
 /* ── Scroll controls — fixed bottom right ── */
 .reader-scroll-controls {
@@ -245,6 +292,14 @@
 .reader-action-btn:hover { background: var(--surface-alt); color: var(--text); }
 .reader-action-btn--highlight { background: #ffe066; color: var(--text); }
 .reader-action-btn--highlight:hover { background: #ffd633; }
+
+.reader-action-btn--bookmark {
+  background: var(--accent-light);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 14px;
+}
+.reader-action-btn--bookmark:hover { background: var(--accent); color: #fff; }
 
 /* ── Remove highlight popup ── */
 .reader-remove-popup {

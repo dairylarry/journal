@@ -80,7 +80,12 @@ export default function DocEditor() {
           toVisibleText(body),
           existingDoc.highlights || []
         )
-        // Bookmarks are scroll-position based and break when text changes — always clear on edit
+        // Adjust bookmark offsets the same way as highlights
+        const adjustedBookmarks = adjustHighlights(
+          toVisibleText(existingDoc.body || ''),
+          toVisibleText(body),
+          existingDoc.bookmarks || []
+        )
         await updateDoc({
           userId: user.userId,
           createdAt: existingDoc.createdAt,
@@ -88,13 +93,13 @@ export default function DocEditor() {
           body,
           tags,
           highlights: adjustedHighlights,
-          bookmarks: [],
+          bookmarks: adjustedBookmarks,
         })
         savedDoc = {
           ...existingDoc,
           title: finalTitle, body, tags,
           highlights: adjustedHighlights,
-          bookmarks: [],
+          bookmarks: adjustedBookmarks,
           updatedAt: new Date().toISOString(),
           wordCount: body.trim().split(/\s+/).filter(Boolean).length,
         }
@@ -129,7 +134,7 @@ export default function DocEditor() {
       {error && <div className="editor-error">{error}</div>}
       {!isNew && existingDoc?.bookmarks?.length > 0 && (
         <div className="doc-editor-bookmark-warning">
-          This document has {existingDoc.bookmarks.length} bookmark{existingDoc.bookmarks.length > 1 ? 's' : ''} — saving will clear {existingDoc.bookmarks.length > 1 ? 'them' : 'it'} since scroll positions shift when text changes.
+          This document has {existingDoc.bookmarks.length} bookmark{existingDoc.bookmarks.length > 1 ? 's' : ''}. Bookmarks and highlights will be adjusted to match text changes — those overlapping edited sections will be removed.
         </div>
       )}
 
@@ -163,6 +168,10 @@ export default function DocEditor() {
         className="doc-editor-body"
         value={body}
         onChange={e => setBody(e.target.value)}
+        onKeyDown={e => {
+          if ((e.ctrlKey || e.metaKey) && e.key === 'b') { e.preventDefault(); applyFormat('**') }
+          if ((e.ctrlKey || e.metaKey) && e.key === 'u') { e.preventDefault(); applyFormat('__') }
+        }}
         placeholder="Paste or type your document here…"
         spellCheck
         autoCorrect="on"
