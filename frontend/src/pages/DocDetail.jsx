@@ -452,7 +452,7 @@ export default function DocDetail() {
       {pendingSelection && (
         <div className="reader-action-bar">
           <button className="reader-action-btn reader-action-btn--bookmark" onClick={addBookmark}>
-            Bookmark
+            ◆
           </button>
           <button className="reader-action-btn reader-action-btn--highlight" onClick={addHighlight}>
             Highlight
