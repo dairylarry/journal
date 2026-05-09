@@ -1,0 +1,128 @@
+.doc-editor {
+  max-width: 100%;
+  padding: 1.5rem 1.25rem 4rem;
+  min-height: 100dvh;
+}
+
+@media (min-width: 768px) {
+  .doc-editor {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 1.5rem 0 4rem;
+  }
+}
+
+.doc-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.doc-editor-save-btn {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.45rem 1.1rem;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.doc-editor-save-btn:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.doc-editor-save-btn:disabled { opacity: 0.4; cursor: default; }
+
+.doc-editor-title {
+  font-family: var(--font-body);
+  font-size: 1.3rem;
+  font-weight: 400;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  width: 100%;
+  padding: 0.5rem 0 0.75rem;
+  outline: none;
+  margin-bottom: 1rem;
+  transition: border-color 0.15s;
+}
+
+.doc-editor-title:focus { border-bottom-color: var(--accent); }
+.doc-editor-title::placeholder { color: var(--text-dim); font-style: italic; }
+
+/* Formatting toolbar */
+.doc-editor-toolbar {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0.6rem;
+}
+
+.doc-editor-fmt-btn {
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0.3rem 0.65rem;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  line-height: 1.4;
+}
+
+.doc-editor-fmt-btn:hover {
+  background: var(--surface-alt);
+  color: var(--text);
+}
+
+/* Body textarea */
+.doc-editor-body {
+  width: 100%;
+  min-height: 55vh;
+  resize: vertical;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  outline: none;
+  transition: border-color 0.15s;
+  display: block;
+}
+
+.doc-editor-body:focus { border-color: var(--accent); }
+
+.doc-editor-body::placeholder { color: var(--text-dim); }
+
+.doc-editor-word-count {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-align: right;
+  margin-top: 0.4rem;
+  margin-bottom: 1.5rem;
+  font-family: var(--font-ui);
+}
+
+.doc-editor-section-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  font-family: var(--font-ui);
+}
+
+/* ── Desktop font size overrides ── */
+@media (min-width: 768px) {
+  .doc-editor-body { font-size: 1.125rem; }
+}

@@ -110,6 +110,11 @@ export default function Landing() {
           <span className="landing-btn-arrow">›</span>
         </button>
 
+        <button className="landing-btn" onClick={() => navigate('/reader')}>
+          <span>Reader</span>
+          <span className="landing-btn-arrow">›</span>
+        </button>
+
         <button className="landing-btn" onClick={() => navigate('/account')}>
           <span>Account</span>
           <span className="landing-btn-arrow">›</span>

@@ -9,6 +9,9 @@ import EntryEditor from './pages/EntryEditor'
 import EntryDetail from './pages/EntryDetail'
 import History from './pages/History'
 import Account from './pages/Account'
+import ReaderLanding from './pages/ReaderLanding'
+import DocDetail from './pages/DocDetail'
+import DocEditor from './pages/DocEditor'
 
 function OfflineBanner() {
   const { user } = useAuth()
@@ -67,6 +70,10 @@ function AuthedRoutes() {
         <Route path="/entries/:entryId" element={<EntryDetail />} />
         <Route path="/history" element={<History />} />
         <Route path="/account" element={<Account />} />
+        <Route path="/reader" element={<ReaderLanding />} />
+        <Route path="/reader/docs/new" element={<DocEditor />} />
+        <Route path="/reader/docs/:docId/edit" element={<DocEditor />} />
+        <Route path="/reader/docs/:docId" element={<DocDetail />} />
       </Routes>
     </>
   )

@@ -1,0 +1,60 @@
+.reader-landing {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 4rem;
+  min-height: 100dvh;
+}
+
+.reader-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.reader-wordmark {
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  color: var(--text);
+  font-style: italic;
+}
+
+.reader-new-btn {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.45rem 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.reader-new-btn:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.reader-tag-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1.5rem;
+  align-items: center;
+}
+
+.reader-doc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.reader-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 4rem 1rem;
+  font-family: var(--font-body);
+  font-style: italic;
+}
