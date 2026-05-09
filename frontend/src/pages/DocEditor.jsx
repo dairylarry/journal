@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { fetchDocs, createDoc, updateDoc } from '../lib/docs'
+import { fetchDocs, createDoc, updateDoc, adjustHighlights, toVisibleText } from '../lib/docs'
 import TagInput from '../components/TagInput'
 import '../styles/DocEditor.css'
 
@@ -74,10 +74,26 @@ export default function DocEditor() {
         }
       } else {
         savedDocId = existingDoc.docId
-        await updateDoc({ userId: user.userId, createdAt: existingDoc.createdAt, title: finalTitle, body, tags })
+        // Adjust highlight offsets to account for any text changes
+        const adjustedHighlights = adjustHighlights(
+          toVisibleText(existingDoc.body || ''),
+          toVisibleText(body),
+          existingDoc.highlights || []
+        )
+        // Bookmarks are scroll-position based and break when text changes — clear them
+        // (bookmarks will be implemented separately; this is the placeholder)
+        await updateDoc({
+          userId: user.userId,
+          createdAt: existingDoc.createdAt,
+          title: finalTitle,
+          body,
+          tags,
+          highlights: adjustedHighlights,
+        })
         savedDoc = {
           ...existingDoc,
           title: finalTitle, body, tags,
+          highlights: adjustedHighlights,
           updatedAt: new Date().toISOString(),
           wordCount: body.trim().split(/\s+/).filter(Boolean).length,
         }
