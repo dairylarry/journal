@@ -5,65 +5,121 @@
   min-height: 100dvh;
 }
 
+/* ── Header ── */
 .doc-detail-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.5rem;
+  gap: 0.5rem;
 }
 
 .doc-detail-actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .doc-action-btn {
   font-family: var(--font-ui);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 500;
-  padding: 0.4rem 1rem;
+  padding: 0.38rem 0.85rem;
   border-radius: 6px;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text-muted);
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
 }
 
-.doc-action-btn:hover {
-  background: var(--surface-alt);
-  color: var(--text);
+.doc-action-btn:hover { background: var(--surface-alt); color: var(--text); }
+.doc-action-btn--active { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+
+/* Bookmark button */
+.doc-bookmark-btn { letter-spacing: 0.03em; }
+.doc-bookmark-btn--active {
+  background: var(--accent-light);
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
+.doc-bookmark-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.2rem;
+}
+
+/* Delete */
 .doc-delete-btn {
   font-family: var(--font-ui);
-  font-size: 0.85rem;
-  padding: 0.4rem 0.75rem;
+  font-size: 0.82rem;
+  padding: 0.38rem 0.6rem;
   background: none;
   border: none;
   color: var(--text-muted);
   cursor: pointer;
   transition: color 0.15s;
 }
-
 .doc-delete-btn:hover { color: var(--error); }
 
 .doc-delete-confirm-btn {
   font-family: var(--font-ui);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 500;
-  padding: 0.4rem 1rem;
+  padding: 0.38rem 0.85rem;
   border-radius: 6px;
   border: 1px solid var(--error);
   background: var(--error);
   color: #fff;
   cursor: pointer;
 }
-
 .doc-delete-confirm-btn:disabled { opacity: 0.6; cursor: default; }
 
-/* Card */
+/* Font size popover */
+.doc-font-wrap { position: relative; }
+
+.doc-font-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  display: flex;
+  align-items: stretch;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  z-index: 300;
+}
+
+.reader-font-btn {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  padding: 0.55rem 0.9rem;
+  cursor: pointer;
+  transition: background 0.12s;
+  line-height: 1;
+  white-space: nowrap;
+}
+.reader-font-btn:hover { background: var(--surface-alt); }
+.reader-font-btn--reset {
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  padding: 0.55rem 0.7rem;
+}
+
+/* ── Document card ── */
 .doc-detail-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -86,11 +142,7 @@
   font-family: var(--font-ui);
 }
 
-.doc-detail-tags {
-  display: flex;
-  gap: 0.35rem;
-  flex-wrap: wrap;
-}
+.doc-detail-tags { display: flex; gap: 0.35rem; flex-wrap: wrap; }
 
 .doc-detail-title {
   font-family: var(--font-body);
@@ -102,13 +154,9 @@
   margin-bottom: 1rem;
 }
 
-.doc-detail-divider {
-  border: none;
-  border-top: 1px solid var(--border);
-  margin: 0;
-}
+.doc-detail-divider { border: none; border-top: 1px solid var(--border); margin: 0; }
 
-/* Body text */
+/* ── Body text ── */
 .doc-detail-body {
   font-family: var(--font-body);
   line-height: 1.9;
@@ -120,56 +168,52 @@
   user-select: text;
 }
 
-/* Highlights */
+/* ── Highlights ── */
 .reader-highlight {
   background: #ffe066;
   border-radius: 2px;
   cursor: pointer;
   transition: background 0.1s;
 }
-
 .reader-highlight:hover { background: #ffd633; }
 
-/* Font size controls pill — fixed bottom right */
-.reader-font-controls {
+/* ── Scroll controls — fixed bottom right ── */
+.reader-scroll-controls {
   position: fixed;
   bottom: 1.5rem;
   right: 1.5rem;
   display: flex;
-  align-items: stretch;
+  flex-direction: column;
+  align-items: center;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 20px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
   overflow: hidden;
   z-index: 100;
+  transition: opacity 0.6s ease;
 }
 
-.reader-font-btn {
+.reader-scroll-btn {
   font-family: var(--font-ui);
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text);
+  font-size: 0.95rem;
+  color: var(--text-muted);
   background: transparent;
   border: none;
   padding: 0.55rem 0.9rem;
   cursor: pointer;
-  transition: background 0.12s;
+  transition: background 0.12s, color 0.12s;
   line-height: 1;
+  width: 100%;
+  text-align: center;
 }
+.reader-scroll-btn:hover { background: var(--surface-alt); color: var(--text); }
+.reader-scroll-btn + .reader-scroll-btn { border-top: 1px solid var(--border); }
 
-.reader-font-btn:hover { background: var(--surface-alt); }
+.reader-scroll-btn--bkm { color: var(--accent); }
+.reader-scroll-btn--bkm:hover { background: var(--accent-light); color: var(--accent-hover); }
 
-.reader-font-btn--reset {
-  border-left: 1px solid var(--border);
-  border-right: 1px solid var(--border);
-  font-size: 0.72rem;
-  font-weight: 400;
-  color: var(--text-muted);
-  padding: 0.55rem 0.7rem;
-}
-
-/* Highlight action bar — fixed bottom center */
+/* ── Highlight action bar — fixed bottom center ── */
 .reader-action-bar {
   position: fixed;
   bottom: 1.5rem;
@@ -198,17 +242,11 @@
   cursor: pointer;
   transition: background 0.12s;
 }
-
 .reader-action-btn:hover { background: var(--surface-alt); color: var(--text); }
+.reader-action-btn--highlight { background: #ffe066; color: var(--text); }
+.reader-action-btn--highlight:hover { background: #ffd633; }
 
-.reader-action-btn--highlight {
-  background: #ffe066;
-  color: var(--text);
-}
-
-.reader-action-btn--highlight:hover { background: #ffd633; color: var(--text); }
-
-/* Remove highlight popup */
+/* ── Remove highlight popup ── */
 .reader-remove-popup {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -217,7 +255,6 @@
   z-index: 200;
   overflow: hidden;
 }
-
 .reader-remove-popup button {
   font-family: var(--font-ui);
   font-size: 0.85rem;
@@ -229,6 +266,6 @@
   width: 100%;
   text-align: left;
   transition: background 0.12s;
+  white-space: nowrap;
 }
-
 .reader-remove-popup button:hover { background: var(--error-dim); }

@@ -80,8 +80,7 @@ export default function DocEditor() {
           toVisibleText(body),
           existingDoc.highlights || []
         )
-        // Bookmarks are scroll-position based and break when text changes — clear them
-        // (bookmarks will be implemented separately; this is the placeholder)
+        // Bookmarks are scroll-position based and break when text changes — always clear on edit
         await updateDoc({
           userId: user.userId,
           createdAt: existingDoc.createdAt,
@@ -89,11 +88,13 @@ export default function DocEditor() {
           body,
           tags,
           highlights: adjustedHighlights,
+          bookmarks: [],
         })
         savedDoc = {
           ...existingDoc,
           title: finalTitle, body, tags,
           highlights: adjustedHighlights,
+          bookmarks: [],
           updatedAt: new Date().toISOString(),
           wordCount: body.trim().split(/\s+/).filter(Boolean).length,
         }
@@ -126,6 +127,11 @@ export default function DocEditor() {
       </div>
 
       {error && <div className="editor-error">{error}</div>}
+      {!isNew && existingDoc?.bookmarks?.length > 0 && (
+        <div className="doc-editor-bookmark-warning">
+          This document has {existingDoc.bookmarks.length} bookmark{existingDoc.bookmarks.length > 1 ? 's' : ''} — saving will clear {existingDoc.bookmarks.length > 1 ? 'them' : 'it'} since scroll positions shift when text changes.
+        </div>
+      )}
 
       <input
         className="doc-editor-title"

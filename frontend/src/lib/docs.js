@@ -73,6 +73,7 @@ export async function fetchDocs({ userId }) {
       ...item,
       tags: Array.isArray(item.tags) ? item.tags : item.tags ? [...item.tags] : [],
       highlights: Array.isArray(item.highlights) ? item.highlights : [],
+      bookmarks: Array.isArray(item.bookmarks) ? item.bookmarks : [],
     }))
     saveCache(docs)
     return docs
@@ -97,6 +98,7 @@ export async function createDoc({ userId, docId, createdAt, title, body, tags })
       tags: tags || [],
       wordCount: wc,
       highlights: [],
+      bookmarks: [],
     },
   }))
   return wc
@@ -113,25 +115,32 @@ export async function updateHighlights({ userId, createdAt, highlights }) {
   if (cache) saveCache(cache.map(d => d.createdAt === createdAt ? { ...d, highlights } : d))
 }
 
-export async function updateDoc({ userId, createdAt, title, body, tags, highlights }) {
+export async function updateDoc({ userId, createdAt, title, body, tags, highlights, bookmarks }) {
   const updatedAt = new Date().toISOString()
   const wc = countWords(body)
-  const hasHighlights = highlights !== undefined
+  const extras = []
+  const vals = { ':t': title, ':b': body, ':tg': tags || [], ':wc': wc, ':ua': updatedAt }
+  if (highlights !== undefined) { extras.push('highlights = :h'); vals[':h'] = highlights }
+  if (bookmarks !== undefined) { extras.push('bookmarks = :bk'); vals[':bk'] = bookmarks }
   await docClient.send(new UpdateCommand({
     TableName: TABLE,
     Key: { userId: `READER#${userId}`, createdAt },
     UpdateExpression: 'SET title = :t, body = :b, tags = :tg, wordCount = :wc, updatedAt = :ua'
-      + (hasHighlights ? ', highlights = :h' : ''),
-    ExpressionAttributeValues: {
-      ':t': title,
-      ':b': body,
-      ':tg': tags || [],
-      ':wc': wc,
-      ':ua': updatedAt,
-      ...(hasHighlights ? { ':h': highlights } : {}),
-    },
+      + (extras.length ? ', ' + extras.join(', ') : ''),
+    ExpressionAttributeValues: vals,
   }))
   return wc
+}
+
+export async function updateBookmarks({ userId, createdAt, bookmarks }) {
+  await docClient.send(new UpdateCommand({
+    TableName: TABLE,
+    Key: { userId: `READER#${userId}`, createdAt },
+    UpdateExpression: 'SET bookmarks = :bk',
+    ExpressionAttributeValues: { ':bk': bookmarks },
+  }))
+  const cache = loadCache()
+  if (cache) saveCache(cache.map(d => d.createdAt === createdAt ? { ...d, bookmarks } : d))
 }
 
 export async function deleteDoc({ userId, createdAt }) {

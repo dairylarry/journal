@@ -113,6 +113,17 @@
   font-family: var(--font-ui);
 }
 
+.doc-editor-bookmark-warning {
+  font-size: 0.8rem;
+  color: #7a5c00;
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  border-radius: 6px;
+  padding: 0.5rem 0.85rem;
+  margin-bottom: 1rem;
+  font-family: var(--font-ui);
+}
+
 .doc-editor-section-label {
   font-size: 0.72rem;
   letter-spacing: 0.1em;

@@ -1,15 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { fetchDocs, deleteDoc, updateHighlights } from '../lib/docs'
+import { fetchDocs, deleteDoc, updateHighlights, updateBookmarks } from '../lib/docs'
 import '../styles/DocDetail.css'
 
-const DEFAULT_FONT_SIZE = 17 // px
+const DEFAULT_FONT_SIZE = 17
 const FONT_STEP = 2
 const FONT_MIN = 12
 const FONT_MAX = 36
+const BOOKMARK_THRESHOLD = 80 // px — how close to an existing bookmark counts as "at it"
 
-// Walk text nodes to get character offset within container (visible text space)
+// ── Text rendering helpers ──────────────────────────────────────────────────
+
 function getCharOffset(container, node, offset) {
   if (node.nodeType === Node.TEXT_NODE) {
     const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT)
@@ -20,7 +22,6 @@ function getCharOffset(container, node, offset) {
     }
     return chars
   }
-  // Element node: sum text before the offset-th child
   const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT)
   const limit = node.childNodes[offset] || null
   let chars = 0, cur
@@ -31,7 +32,6 @@ function getCharOffset(container, node, offset) {
   return chars
 }
 
-// Parse **bold** and __underline__ into segments with visible-text positions
 function parseMarkup(raw) {
   const segs = []
   const re = /\*\*(.+?)\*\*|__(.+?)__/gs
@@ -42,11 +42,11 @@ function parseMarkup(raw) {
       segs.push({ text: t, bold: false, underline: false, visStart: visPos, visEnd: visPos + t.length })
       visPos += t.length
     }
-    const inner = m[1] !== undefined ? m[1] : m[2]
     const isBold = m[1] !== undefined
+    const inner = isBold ? m[1] : m[2]
     segs.push({ text: inner, bold: isBold, underline: !isBold, visStart: visPos, visEnd: visPos + inner.length })
     visPos += inner.length
-    last = m.index + (isBold ? 4 : 4) + inner.length // 2 open + 2 close markers
+    last = m.index + 4 + inner.length
   }
   if (last < raw.length) {
     const t = raw.slice(last)
@@ -55,12 +55,10 @@ function parseMarkup(raw) {
   return segs
 }
 
-// Merge markup segments with highlight ranges (both in visible-text space)
 function buildRenderSegments(raw, highlights) {
   const markupSegs = parseMarkup(raw)
   const sorted = (highlights || []).map((h, i) => ({ ...h, idx: i })).sort((a, b) => a.start - b.start)
   if (!sorted.length) return markupSegs.map(s => ({ ...s, highlighted: false, hlIdx: -1 }))
-
   const result = []
   for (const seg of markupSegs) {
     let cursor = seg.visStart
@@ -69,15 +67,13 @@ function buildRenderSegments(raw, highlights) {
       if (hl.start >= seg.visEnd) break
       const clipStart = Math.max(hl.start, cursor)
       const clipEnd = Math.min(hl.end, seg.visEnd)
-      if (cursor < clipStart) {
+      if (cursor < clipStart)
         result.push({ ...seg, text: seg.text.slice(cursor - seg.visStart, clipStart - seg.visStart), highlighted: false, hlIdx: -1 })
-      }
       result.push({ ...seg, text: seg.text.slice(clipStart - seg.visStart, clipEnd - seg.visStart), highlighted: true, hlIdx: hl.idx })
       cursor = clipEnd
     }
-    if (cursor < seg.visEnd) {
+    if (cursor < seg.visEnd)
       result.push({ ...seg, text: seg.text.slice(cursor - seg.visStart), highlighted: false, hlIdx: -1 })
-    }
   }
   return result
 }
@@ -86,14 +82,13 @@ function mergeAndAdd(existing, newH) {
   const all = [...existing, { start: newH.start, end: newH.end }].sort((a, b) => a.start - b.start)
   const merged = []
   for (const h of all) {
-    if (merged.length && h.start <= merged.at(-1).end) {
-      merged.at(-1).end = Math.max(merged.at(-1).end, h.end)
-    } else {
-      merged.push({ ...h })
-    }
+    if (merged.length && h.start <= merged.at(-1).end) merged.at(-1).end = Math.max(merged.at(-1).end, h.end)
+    else merged.push({ ...h })
   }
   return merged
 }
+
+// ── Component ───────────────────────────────────────────────────────────────
 
 export default function DocDetail() {
   const { docId } = useParams()
@@ -104,31 +99,87 @@ export default function DocDetail() {
   const [doc, setDoc] = useState(state?.doc || null)
   const [loading, setLoading] = useState(!state?.doc)
   const [highlights, setHighlights] = useState(state?.doc?.highlights || [])
+  const [bookmarks, setBookmarks] = useState(state?.doc?.bookmarks || [])
   const [fontSize, setFontSize] = useState(() =>
     parseInt(localStorage.getItem('readerFontSize') || String(DEFAULT_FONT_SIZE), 10)
   )
+  const [showFontControls, setShowFontControls] = useState(false)
   const [pendingSelection, setPendingSelection] = useState(null)
   const [activeHlIdx, setActiveHlIdx] = useState(null)
   const [activeHlPos, setActiveHlPos] = useState(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
+  // Scroll state
+  const [scrollY, setScrollY] = useState(0)
+  const [maxScroll, setMaxScroll] = useState(0)
+  const [isScrolling, setIsScrolling] = useState(false)
+
   const textRef = useRef(null)
   const selTimerRef = useRef(null)
+  const scrollFadeRef = useRef(null)
+  const fontControlsRef = useRef(null)
 
+  // Load doc
   useEffect(() => {
     if (state?.doc) return
     fetchDocs({ userId: user.userId })
       .then(all => {
         const found = all.find(d => d.docId === docId)
-        if (found) { setDoc(found); setHighlights(found.highlights || []) }
-        else navigate('/reader')
+        if (found) {
+          setDoc(found)
+          setHighlights(found.highlights || [])
+          setBookmarks(found.bookmarks || [])
+        } else navigate('/reader')
       })
       .catch(console.error)
       .finally(() => setLoading(false))
   }, []) // eslint-disable-line
 
-  // Text selection detection for highlighting
+  // Auto-restore scroll position after doc is ready
+  useEffect(() => {
+    if (!doc) return
+    const saved = localStorage.getItem(`scrollPos_${docId}`)
+    if (!saved) return
+    const pos = parseInt(saved, 10)
+    if (pos > 0) {
+      setTimeout(() => {
+        window.scrollTo(0, pos)
+        setIsScrolling(true)
+        scrollFadeRef.current = setTimeout(() => setIsScrolling(false), 2000)
+      }, 120)
+    }
+  }, [doc?.docId]) // eslint-disable-line
+
+  // Save scroll position on unmount
+  useEffect(() => {
+    return () => localStorage.setItem(`scrollPos_${docId}`, String(window.scrollY))
+  }, [docId])
+
+  // Scroll event → update position + fade controls
+  useEffect(() => {
+    function onScroll() {
+      const y = window.scrollY
+      const max = document.documentElement.scrollHeight - window.innerHeight
+      setScrollY(y)
+      setMaxScroll(max)
+      setIsScrolling(true)
+      clearTimeout(scrollFadeRef.current)
+      scrollFadeRef.current = setTimeout(() => setIsScrolling(false), 2000)
+    }
+    function onResize() {
+      setMaxScroll(document.documentElement.scrollHeight - window.innerHeight)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onResize)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onResize)
+      clearTimeout(scrollFadeRef.current)
+    }
+  }, [])
+
+  // Text selection for highlights
   useEffect(() => {
     function onSelectionChange() {
       clearTimeout(selTimerRef.current)
@@ -143,10 +194,7 @@ export default function DocDetail() {
         const range = sel.getRangeAt(0)
         const start = getCharOffset(textRef.current, range.startContainer, range.startOffset)
         const end = getCharOffset(textRef.current, range.endContainer, range.endOffset)
-        if (start < end) {
-          setActiveHlIdx(null)
-          setPendingSelection({ start, end })
-        }
+        if (start < end) { setActiveHlIdx(null); setPendingSelection({ start, end }) }
       }, 250)
     }
     document.addEventListener('selectionchange', onSelectionChange)
@@ -155,6 +203,23 @@ export default function DocDetail() {
       clearTimeout(selTimerRef.current)
     }
   }, [])
+
+  // Close font controls popover on outside click
+  useEffect(() => {
+    if (!showFontControls) return
+    function onOutside(e) {
+      if (fontControlsRef.current && !fontControlsRef.current.contains(e.target))
+        setShowFontControls(false)
+    }
+    document.addEventListener('mousedown', onOutside)
+    document.addEventListener('touchstart', onOutside)
+    return () => {
+      document.removeEventListener('mousedown', onOutside)
+      document.removeEventListener('touchstart', onOutside)
+    }
+  }, [showFontControls])
+
+  // ── Handlers ───────────────────────────────────────────────────────────────
 
   function clearSelection() {
     window.getSelection()?.removeAllRanges()
@@ -191,6 +256,16 @@ export default function DocDetail() {
     localStorage.setItem('readerFontSize', String(DEFAULT_FONT_SIZE))
   }
 
+  function handleBookmarkToggle() {
+    const currentY = window.scrollY
+    const nearbyIdx = bookmarks.findIndex(b => Math.abs(b.scrollY - currentY) < BOOKMARK_THRESHOLD)
+    const next = nearbyIdx >= 0
+      ? bookmarks.filter((_, i) => i !== nearbyIdx)
+      : [...bookmarks, { scrollY: currentY, savedAt: new Date().toISOString() }].sort((a, b) => a.scrollY - b.scrollY)
+    setBookmarks(next)
+    if (doc) updateBookmarks({ userId: user.userId, createdAt: doc.createdAt, bookmarks: next }).catch(() => {})
+  }
+
   async function handleDelete() {
     setDeleting(true)
     try {
@@ -198,6 +273,16 @@ export default function DocDetail() {
       navigate('/reader', { replace: true })
     } catch { setDeleting(false) }
   }
+
+  // ── Derived values ─────────────────────────────────────────────────────────
+
+  const nearCurrentBookmark = bookmarks.some(b => Math.abs(b.scrollY - scrollY) < BOOKMARK_THRESHOLD)
+  const prevBookmark = [...bookmarks].reverse().find(b => b.scrollY < scrollY - BOOKMARK_THRESHOLD / 2)
+  const nextBookmark = bookmarks.find(b => b.scrollY > scrollY + BOOKMARK_THRESHOLD / 2)
+
+  const atTop = scrollY <= 80
+  const atBottom = maxScroll > 0 && scrollY >= maxScroll - 80
+  const showScrollPill = !atTop || !atBottom || prevBookmark || nextBookmark
 
   if (loading) return <div className="page-loading">loading…</div>
   if (!doc) return null
@@ -216,18 +301,51 @@ export default function DocDetail() {
       className="doc-detail"
       onClick={() => { setActiveHlIdx(null); setActiveHlPos(null) }}
     >
+      {/* ── Header ── */}
       <div className="doc-detail-header">
         <button className="btn-back" onClick={() => navigate('/reader')}>← reader</button>
+
         <div className="doc-detail-actions">
+          {/* Font size */}
+          <div className="doc-font-wrap" ref={fontControlsRef}>
+            <button
+              className={`doc-action-btn${showFontControls ? ' doc-action-btn--active' : ''}`}
+              onClick={e => { e.stopPropagation(); setShowFontControls(v => !v) }}
+            >
+              Aa
+            </button>
+            {showFontControls && (
+              <div className="doc-font-popover">
+                <button className="reader-font-btn" onClick={() => changeFontSize(-FONT_STEP)}>A−</button>
+                <button className="reader-font-btn reader-font-btn--reset" onClick={resetFontSize}>A</button>
+                <button className="reader-font-btn" onClick={() => changeFontSize(FONT_STEP)}>A+</button>
+              </div>
+            )}
+          </div>
+
+          {/* Bookmark */}
+          <button
+            className={`doc-action-btn doc-bookmark-btn${nearCurrentBookmark ? ' doc-bookmark-btn--active' : ''}`}
+            onClick={e => { e.stopPropagation(); handleBookmarkToggle() }}
+            title={nearCurrentBookmark ? 'Remove bookmark' : 'Add bookmark'}
+          >
+            {bookmarks.length > 0
+              ? <>{nearCurrentBookmark ? '▼' : '◆'} <span className="doc-bookmark-count">{bookmarks.length}</span></>
+              : '◇'}
+          </button>
+
+          {/* Edit */}
           <button
             className="doc-action-btn"
             onClick={e => {
               e.stopPropagation()
-              navigate(`/reader/docs/${doc.docId}/edit`, { state: { doc: { ...doc, highlights } } })
+              navigate(`/reader/docs/${doc.docId}/edit`, { state: { doc: { ...doc, highlights, bookmarks } } })
             }}
           >
             Edit
           </button>
+
+          {/* Delete */}
           {confirmDelete ? (
             <>
               <button
@@ -237,24 +355,19 @@ export default function DocDetail() {
               >
                 {deleting ? 'deleting…' : 'confirm delete'}
               </button>
-              <button
-                className="doc-action-btn"
-                onClick={e => { e.stopPropagation(); setConfirmDelete(false) }}
-              >
+              <button className="doc-action-btn" onClick={e => { e.stopPropagation(); setConfirmDelete(false) }}>
                 Cancel
               </button>
             </>
           ) : (
-            <button
-              className="doc-delete-btn"
-              onClick={e => { e.stopPropagation(); setConfirmDelete(true) }}
-            >
+            <button className="doc-delete-btn" onClick={e => { e.stopPropagation(); setConfirmDelete(true) }}>
               Delete
             </button>
           )}
         </div>
       </div>
 
+      {/* ── Document card ── */}
       <div className="doc-detail-card">
         <div className="doc-detail-meta">
           <span className="doc-detail-date">{createdLabel}</span>
@@ -277,51 +390,61 @@ export default function DocDetail() {
         >
           {segments.map((seg, i) => {
             const inner = seg.bold
-              ? <strong key="inner">{seg.text}</strong>
-              : seg.underline
-                ? <u key="inner">{seg.text}</u>
-                : seg.text
-            if (seg.highlighted) {
-              return (
-                <mark
-                  key={i}
-                  className="reader-highlight"
-                  onClick={e => {
-                    e.stopPropagation()
-                    clearTimeout(selTimerRef.current)
-                    setPendingSelection(null)
-                    setActiveHlIdx(seg.hlIdx)
-                    setActiveHlPos({ x: e.clientX, y: e.clientY })
-                  }}
-                >
-                  {inner}
-                </mark>
-              )
-            }
-            return <span key={i}>{inner}</span>
+              ? <strong key="i">{seg.text}</strong>
+              : seg.underline ? <u key="i">{seg.text}</u>
+              : seg.text
+            return seg.highlighted ? (
+              <mark
+                key={i}
+                className="reader-highlight"
+                onClick={e => {
+                  e.stopPropagation()
+                  clearTimeout(selTimerRef.current)
+                  setPendingSelection(null)
+                  setActiveHlIdx(seg.hlIdx)
+                  setActiveHlPos({ x: e.clientX, y: e.clientY })
+                }}
+              >{inner}</mark>
+            ) : (
+              <span key={i}>{inner}</span>
+            )
           })}
         </div>
       </div>
 
-      {/* Bottom controls: highlight action bar OR font size pill */}
-      {pendingSelection ? (
+      {/* ── Highlight action bar (bottom center) ── */}
+      {pendingSelection && (
         <div className="reader-action-bar">
           <button className="reader-action-btn reader-action-btn--highlight" onClick={addHighlight}>
             Highlight
           </button>
-          <button className="reader-action-btn" onClick={clearSelection}>
-            Cancel
-          </button>
-        </div>
-      ) : (
-        <div className="reader-font-controls">
-          <button className="reader-font-btn" onClick={() => changeFontSize(-FONT_STEP)}>A−</button>
-          <button className="reader-font-btn reader-font-btn--reset" onClick={resetFontSize}>A</button>
-          <button className="reader-font-btn" onClick={() => changeFontSize(FONT_STEP)}>A+</button>
+          <button className="reader-action-btn" onClick={clearSelection}>Cancel</button>
         </div>
       )}
 
-      {/* Remove highlight popup */}
+      {/* ── Scroll controls (bottom right, fades) ── */}
+      {showScrollPill && (
+        <div className="reader-scroll-controls" style={{ opacity: isScrolling ? 1 : 0.18 }}>
+          {!atTop && (
+            <button className="reader-scroll-btn" title="Top"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>↑</button>
+          )}
+          {prevBookmark && (
+            <button className="reader-scroll-btn reader-scroll-btn--bkm" title="Previous bookmark"
+              onClick={() => window.scrollTo({ top: prevBookmark.scrollY, behavior: 'smooth' })}>▲</button>
+          )}
+          {nextBookmark && (
+            <button className="reader-scroll-btn reader-scroll-btn--bkm" title="Next bookmark"
+              onClick={() => window.scrollTo({ top: nextBookmark.scrollY, behavior: 'smooth' })}>▼</button>
+          )}
+          {!atBottom && (
+            <button className="reader-scroll-btn" title="Bottom"
+              onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}>↓</button>
+          )}
+        </div>
+      )}
+
+      {/* ── Remove highlight popup ── */}
       {activeHlIdx !== null && activeHlPos && (
         <div
           className="reader-remove-popup"
